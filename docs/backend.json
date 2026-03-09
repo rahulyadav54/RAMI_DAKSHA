@@ -1,0 +1,82 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Details about the user including role and progress.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher", "parent"] },
+        "gradeLevel": { "type": "number" },
+        "totalPoints": { "type": "number" },
+        "avatarUrl": { "type": "string" }
+      },
+      "required": ["uid", "role"]
+    },
+    "FlashcardSet": {
+      "title": "Flashcard Set",
+      "description": "A collection of flashcards for a specific topic.",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string" },
+        "title": { "type": "string" },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "front": { "type": "string" },
+              "back": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "StudyGuide": {
+      "title": "Study Guide",
+      "description": "AI-generated summary and key takeaways.",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string" },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "keyPoints": { "type": "array", "items": { "type": "string" } },
+        "vocabulary": { "type": "array", "items": { "type": "object", "properties": { "word": { "type": "string" }, "definition": { "type": "string" } } } }
+      }
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "A badge or milestone reached by a student.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "icon": { "type": "string" },
+        "unlockedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
+      "description": "User profiles and settings."
+    },
+    "/users/{userId}/flashcards": {
+      "schema": { "$ref": "#/backend/entities/FlashcardSet" },
+      "description": "Flashcards saved by the user."
+    },
+    "/users/{userId}/studyGuides": {
+      "schema": { "$ref": "#/backend/entities/StudyGuide" },
+      "description": "Study guides generated for the user."
+    },
+    "/users/{userId}/achievements": {
+      "schema": { "$ref": "#/backend/entities/Achievement" },
+      "description": "Badges earned by the student."
+    }
+  }
+}

@@ -1,6 +1,10 @@
+
 import { config } from 'dotenv';
 config();
 
 import '@/ai/flows/generate-quiz-from-content.ts';
 import '@/ai/flows/evaluate-student-answer.ts';
 import '@/ai/flows/detect-reading-level.ts';
+import '@/ai/flows/generate-flashcards.ts';
+import '@/ai/flows/generate-study-guide.ts';
+import '@/ai/flows/ai-tutor-chat.ts';
