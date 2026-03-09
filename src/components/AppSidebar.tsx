@@ -1,12 +1,13 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   BookOpen, 
   LayoutDashboard, 
-  Upload, 
+  PlusCircle, 
   Zap, 
   Layers, 
   Bot, 
@@ -15,7 +16,6 @@ import {
   Trophy, 
   LogOut,
   ChevronRight,
-  PlusCircle,
   Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,12 @@ export function AppSidebar() {
   const { user } = useUser();
   const auth = useAuth();
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch by waiting for mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (pathname === "/" || pathname === "/login") return null;
 
@@ -69,6 +75,9 @@ export function AppSidebar() {
       });
     }
   };
+
+  const displayName = mounted && user ? (user.displayName || "Scholar") : "Scholar";
+  const userUid = mounted && user ? user.uid : "guest";
 
   return (
     <Sidebar className="border-r border-primary/5 bg-white/50 backdrop-blur-xl">
@@ -119,24 +128,24 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-6 border-t border-primary/5">
-        <div 
+        <button 
           onClick={handleSignOut}
-          className="flex items-center gap-4 p-3 rounded-2xl hover:bg-destructive/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-destructive/10"
+          className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-destructive/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-destructive/10 text-left"
         >
           <Avatar className="h-11 w-11 border-2 border-white shadow-sm transition-transform group-hover:scale-105">
-            <AvatarImage src={`https://picsum.photos/seed/${user?.uid || 'guest'}/100/100`} />
+            <AvatarImage src={`https://picsum.photos/seed/${userUid}/100/100`} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
-              {user?.displayName?.substring(0, 2).toUpperCase() || "AN"}
+              {displayName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">{user?.displayName || "New Scholar"}</p>
+            <p className="text-sm font-bold text-foreground truncate">{displayName}</p>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 group-hover:text-destructive transition-colors">
               <LogOut className="h-3 w-3" /> Sign Out
             </p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:translate-x-1 transition-transform" />
-        </div>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
