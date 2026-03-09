@@ -1,20 +1,20 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { doc, collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useAuth, useFirestore, useUser } from "@/firebase";
-import { Navigation } from "@/components/Navigation";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useFirestore, useUser } from "@/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, FileText, AlertCircle, Sparkles } from "lucide-react";
+import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
 import { generateFlashcards } from "@/ai/flows/generate-flashcards";
+import { parseDocument } from "@/lib/document-parser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,10 +26,34 @@ export default function UploadPage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const text = await parseDocument(file);
+      setContent(text);
+      toast({
+        title: "Document processed",
+        description: `Successfully extracted text from ${file.name}.`,
+      });
+    } catch (err: any) {
+      setError("Failed to process document: " + err.message);
+    } finally {
+      setIsProcessing(false);
+      // Reset input so the same file can be uploaded again if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleGenerate = async () => {
     if (!content.trim()) {
-      setError("Please provide some text content first.");
+      setError("Please provide some text content or upload a document first.");
       return;
     }
 
@@ -93,7 +117,7 @@ export default function UploadPage() {
             </div>
             <CardTitle className="text-3xl font-headline font-bold">New Reading Session</CardTitle>
             <CardDescription className="text-lg mt-2">
-              Transform any text into a masterclass.
+              Transform any text or document into a masterclass.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -106,11 +130,32 @@ export default function UploadPage() {
             )}
             
             <div className="space-y-4">
-              <Label htmlFor="content" className="text-lg font-semibold">What are we studying today?</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="content" className="text-lg font-semibold">Study Material</Label>
+                <div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    ref={fileInputRef}
+                    accept=".pdf,.docx,.txt"
+                    onChange={handleFileUpload}
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 rounded-xl"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isProcessing}
+                  >
+                    <FileUp className="h-4 w-4" /> Upload Document
+                  </Button>
+                </div>
+              </div>
+              
               <Textarea
                 id="content"
-                placeholder="Paste an article, chapter, or essay here..."
-                className="min-h-[350px] resize-none text-base p-6 rounded-2xl border-primary/10 focus:ring-primary shadow-inner bg-white/50"
+                placeholder="Paste an article, chapter, or essay here... or upload a file above."
+                className="min-h-[300px] resize-none text-base p-6 rounded-2xl border-primary/10 focus:ring-primary shadow-inner bg-white/50"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isProcessing}
@@ -118,7 +163,7 @@ export default function UploadPage() {
               <div className="flex justify-between items-center px-2">
                 <span className="text-xs text-muted-foreground font-mono">{content.length} chars</span>
                 <span className="text-xs text-primary/60 flex items-center gap-1">
-                   <Sparkles className="h-3 w-3" /> GenAI Optimized
+                   <Sparkles className="h-3 w-3" /> PDF, DOCX, TXT supported
                 </span>
               </div>
             </div>
@@ -131,7 +176,7 @@ export default function UploadPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-6 w-6 animate-spin" />
-                  Generating Intelligence...
+                  Processing...
                 </>
               ) : (
                 <>
@@ -144,7 +189,7 @@ export default function UploadPage() {
           <CardFooter className="justify-center border-t bg-muted/20 p-6 rounded-b-2xl">
             <div className="flex gap-8 text-xs text-muted-foreground uppercase tracking-widest font-bold">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4" /> PDF Support
+                <FileText className="h-4 w-4" /> Smart Extract
               </div>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" /> AI Quiz
