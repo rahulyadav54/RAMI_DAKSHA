@@ -1,11 +1,7 @@
 'use server';
 /**
  * @fileOverview A Genkit flow for generating various types of comprehension questions
- * from provided text content.
- *
- * - generateQuizFromContent - A function that handles the question generation process.
- * - GenerateQuizFromContentInput - The input type for the generateQuizFromContent function.
- * - GenerateQuizFromContentOutput - The return type for the generateQuizFromContent function.
+ * from provided text content with configurable counts.
  */
 
 import {ai} from '@/ai/genkit';
@@ -13,6 +9,10 @@ import {z} from 'genkit';
 
 const GenerateQuizFromContentInputSchema = z.object({
   content: z.string().describe('The text content from which to generate questions.'),
+  mcqCount: z.number().default(3),
+  shortCount: z.number().default(3),
+  tfCount: z.number().default(2),
+  blankCount: z.number().default(2),
 });
 export type GenerateQuizFromContentInput = z.infer<typeof GenerateQuizFromContentInputSchema>;
 
@@ -67,19 +67,17 @@ const prompt = ai.definePrompt({
   name: 'generateQuizFromContentPrompt',
   input: { schema: GenerateQuizFromContentInputSchema },
   output: { schema: GenerateQuizFromContentOutputSchema },
-  prompt: `You are an expert educator tasked with creating a comprehensive quiz from provided text content.
-Generate a variety of comprehension questions based on the following content.
+  prompt: `You are an expert educator. Generate a high-quality assessment from the provided text.
+  
+  Requested Question Counts:
+  - Multiple Choice: {{{mcqCount}}}
+  - Short Answer: {{{shortCount}}}
+  - True/False: {{{tfCount}}}
+  - Fill in the Blanks: {{{blankCount}}}
 
-Your output MUST be a JSON object conforming to the provided schema, with arrays for each question type.
-Ensure questions are contextually relevant and cover the main points of the text.
+  Content: """{{{content}}}"""
 
-Content: """{{{content}}}"""
-
-Generate:
-- At least 3 multiple-choice questions.
-- At least 3 short answer questions.
-- At least 2 true/false questions.
-- At least 2 fill-in-the-blanks questions.
+  Ensure questions are factually grounded in the text. For fill-in-the-blanks, use "___" for the blank space.
 `,
 });
 
