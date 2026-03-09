@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -31,9 +32,6 @@ import {
 } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
-import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
-import { generateFlashcards } from "@/ai/flows/generate-flashcards";
-import { generateFlowchart } from "@/ai/flows/generate-flowchart";
 import { parseDocument } from "@/lib/document-parser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -93,7 +91,9 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      const [readingLevel, quizData, studyGuide, flashcards, flowchart] = await Promise.all([
+      // Step 1: Detect Reading Level and Build Quiz (The core necessities)
+      // We don't block on study guides or videos here to prevent timeouts
+      const [readingLevel, quizData] = await Promise.all([
         detectReadingLevel({ text: content }),
         generateQuizFromContent({ 
           content,
@@ -102,51 +102,38 @@ export default function UploadPage() {
           tfCount,
           blankCount,
           difficulty
-        }),
-        generateStudyGuide({ content }),
-        generateFlashcards({ content }),
-        generateFlowchart({ content })
+        })
       ]);
       
-      if (!db || !user) {
-         sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
-         sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
-         sessionStorage.setItem("last_flowchart", flowchart.mermaidCode);
-         sessionStorage.setItem("quiz_timer", timerSeconds.toString());
-         router.push("/quiz/preview");
-         return;
-      }
-
-      const sessionsRef = collection(db, "users", user.uid, "sessions");
-      const sessionData = {
-        content,
-        createdAt: serverTimestamp(),
-        readingLevel,
-        quiz: quizData,
-        studyGuide,
-        flashcards: flashcards.cards,
-        flowchart: flowchart.mermaidCode,
-        config: {
-          timerSeconds,
-          mcqCount,
-          shortCount,
-          tfCount,
-          blankCount,
-          difficulty
-        }
-      };
-
-      await addDoc(sessionsRef, sessionData);
-
+      // Store core data in session
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
-      sessionStorage.setItem("last_flowchart", flowchart.mermaidCode);
       sessionStorage.setItem("quiz_timer", timerSeconds.toString());
-      sessionStorage.setItem("current_session_id", "new-temp-session"); 
-      
+
+      if (db && user) {
+        const sessionsRef = collection(db, "users", user.uid, "sessions");
+        const sessionData = {
+          content,
+          createdAt: serverTimestamp(),
+          readingLevel,
+          quiz: quizData,
+          config: {
+            timerSeconds,
+            mcqCount,
+            shortCount,
+            tfCount,
+            blankCount,
+            difficulty
+          }
+        };
+        const newDoc = await addDoc(sessionsRef, sessionData);
+        sessionStorage.setItem("current_session_id", newDoc.id); 
+      }
+
       router.push("/quiz/preview");
     } catch (err: any) {
-      setError("Failed to generate content: " + err.message);
+      setError("An unexpected error occurred during processing. The server might be busy. Please try again.");
+      console.error(err);
     } finally {
       setIsProcessing(false);
     }
@@ -207,7 +194,7 @@ export default function UploadPage() {
             {error && (
               <Alert variant="destructive" className="rounded-2xl">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>Processing Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
@@ -243,7 +230,7 @@ export default function UploadPage() {
                 <div className={cn("absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity", tool.color)} />
                 <CardContent className="p-8 flex items-start gap-6">
                   <div className={cn("p-4 rounded-2xl text-white shadow-lg shrink-0", tool.color)}>
-                    <tool.icon className="h-6 w-6" />
+                    {isProcessing && tool.name === "Quiz Hub" ? <Loader2 className="h-6 w-6 animate-spin" /> : <tool.icon className="h-6 w-6" />}
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold font-headline">{tool.name}</h3>

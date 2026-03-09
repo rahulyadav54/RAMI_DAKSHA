@@ -1,14 +1,13 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for detecting the reading level of provided text content.
- *
- * - detectReadingLevel - A function that handles the reading level detection process.
- * - DetectReadingLevelInput - The input type for the detectReadingLevel function.
- * - DetectReadingLevelOutput - The return type for the detectReadingLevel function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+
+export const maxDuration = 60;
 
 const DetectReadingLevelInputSchema = z.object({
   text: z.string().describe('The text content to analyze for reading level.'),
@@ -51,14 +50,12 @@ const detectReadingLevelPrompt = ai.definePrompt({
   2. An estimated U.S. grade level score (a number representing the approximate grade level required to understand the text).
   3. A brief explanation of these scores and what they suggest about the text's difficulty.
   
-  Aim to mimic the output format and interpretative style of established readability analysis tools like Flesch-Kincaid or Gunning Fog, even though you are estimating.
-
   Text:
   {{{text}}}
   `,
 });
 
-const detectReadingLevelFlow = ai.defineFlow(
+export const detectReadingLevelFlow = ai.defineFlow(
   {
     name: 'detectReadingLevelFlow',
     inputSchema: DetectReadingLevelInputSchema,
@@ -66,6 +63,7 @@ const detectReadingLevelFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await detectReadingLevelPrompt(input);
-    return output!;
+    if (!output) throw new Error('Reading level detection failed.');
+    return output;
   }
 );

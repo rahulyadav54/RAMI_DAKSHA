@@ -8,6 +8,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+export const maxDuration = 60;
+
 const GenerateQuizFromContentInputSchema = z.object({
   content: z.string().describe('The text content from which to generate questions.'),
   mcqCount: z.number().default(3),
@@ -90,7 +92,7 @@ const prompt = ai.definePrompt({
 `,
 });
 
-const generateQuizFromContentFlow = ai.defineFlow(
+export const generateQuizFromContentFlow = ai.defineFlow(
   {
     name: 'generateQuizFromContentFlow',
     inputSchema: GenerateQuizFromContentInputSchema,
