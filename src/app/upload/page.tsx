@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp } from "lucide-react";
+import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp, BookOpen } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
@@ -46,7 +46,6 @@ export default function UploadPage() {
       setError("Failed to process document: " + err.message);
     } finally {
       setIsProcessing(false);
-      // Reset input so the same file can be uploaded again if needed
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -70,7 +69,6 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      // Parallel GenAI processing for efficiency
       const [readingLevel, quizData, studyGuide, flashcards] = await Promise.all([
         detectReadingLevel({ text: content }),
         generateQuizFromContent({ content }),
@@ -80,7 +78,6 @@ export default function UploadPage() {
       
       if (!db) return;
 
-      // Save to Firestore
       const sessionsRef = collection(db, "users", user.uid, "sessions");
       const docRef = await addDoc(sessionsRef, {
         content,
@@ -91,7 +88,6 @@ export default function UploadPage() {
         flashcards: flashcards.cards
       });
 
-      // Maintain session storage for current workflow
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("quiz_content", content);
@@ -112,12 +108,12 @@ export default function UploadPage() {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <div className="bg-primary/10 p-4 rounded-full">
-                <Upload className="h-8 w-8 text-primary" />
+                <BookOpen className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-3xl font-headline font-bold">New Reading Session</CardTitle>
+            <CardTitle className="text-3xl font-headline font-bold">Start Your Quiz</CardTitle>
             <CardDescription className="text-lg mt-2">
-              Transform any text or document into a masterclass.
+              Upload a document or paste text to generate your personalized AI assessment.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -131,7 +127,7 @@ export default function UploadPage() {
             
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="content" className="text-lg font-semibold">Study Material</Label>
+                <Label htmlFor="content" className="text-lg font-semibold">Reading Material</Label>
                 <div>
                   <input
                     type="file"
@@ -154,16 +150,16 @@ export default function UploadPage() {
               
               <Textarea
                 id="content"
-                placeholder="Paste an article, chapter, or essay here... or upload a file above."
+                placeholder="Paste your article, book chapter, or notes here... Our AI will build a quiz based on this content."
                 className="min-h-[300px] resize-none text-base p-6 rounded-2xl border-primary/10 focus:ring-primary shadow-inner bg-white/50"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isProcessing}
               />
               <div className="flex justify-between items-center px-2">
-                <span className="text-xs text-muted-foreground font-mono">{content.length} chars</span>
+                <span className="text-xs text-muted-foreground font-mono">{content.length} characters</span>
                 <span className="text-xs text-primary/60 flex items-center gap-1">
-                   <Sparkles className="h-3 w-3" /> PDF, DOCX, TXT supported
+                   <Sparkles className="h-3 w-3" /> PDF, DOCX, and TXT supported
                 </span>
               </div>
             </div>
@@ -176,26 +172,26 @@ export default function UploadPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-6 w-6 animate-spin" />
-                  Processing...
+                  Analyzing Content...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-6 w-6" />
-                  Generate Smart Study Kit
+                  Generate Quiz & Study Kit
                 </>
               )}
             </Button>
           </CardContent>
           <CardFooter className="justify-center border-t bg-muted/20 p-6 rounded-b-2xl">
-            <div className="flex gap-8 text-xs text-muted-foreground uppercase tracking-widest font-bold">
-              <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4" /> Smart Extract
+            <div className="flex gap-8 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+              <div className="flex items-center gap-1">
+                <FileText className="h-3 w-3" /> Auto-Extract
               </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" /> AI Quiz
+              <div className="flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> AI Analysis
               </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" /> Flashcards
+              <div className="flex items-center gap-1">
+                <BookOpen className="h-3 w-3" /> Smart Quiz
               </div>
             </div>
           </CardFooter>
