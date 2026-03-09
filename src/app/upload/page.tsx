@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, BookOpen, AlertCircle, Sparkles, FileUp, Settings2, Clock, BarChart } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
@@ -21,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -132,7 +134,7 @@ export default function UploadPage() {
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("quiz_content", content);
       sessionStorage.setItem("quiz_timer", timerSeconds.toString());
-      sessionStorage.setItem("current_session_id", "new-temp-session"); // We'd get the actual ID if needed
+      sessionStorage.setItem("current_session_id", "new-temp-session"); 
       
       router.push("/quiz/preview");
     } catch (err: any) {
