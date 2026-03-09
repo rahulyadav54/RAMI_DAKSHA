@@ -97,14 +97,13 @@ export function AppSidebar() {
       ];
     }
 
-    // Student Role - matches the user's reference image
+    // Student Role
     return [
       ...common,
       { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
       { href: "/flashcards", label: "Flashcards", icon: Layers },
       { href: "/ai-tutor", label: "AI Tutor", icon: Bot },
       { href: "/study-guide", label: "Study Guide", icon: FileText },
-      { href: "/parent-portal", label: "Parent Portal", icon: Users },
       { href: "/achievements", label: "Achievements", icon: Trophy },
       { href: "/upload", label: "New Session", icon: PlusCircle, highlight: true },
       { href: "/homework", label: "Homework Hub", icon: BookCheck },
