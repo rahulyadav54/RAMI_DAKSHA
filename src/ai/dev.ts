@@ -11,3 +11,7 @@ import '@/ai/flows/ai-tutor-chat.ts';
 import '@/ai/flows/generate-flowchart.ts';
 import '@/ai/flows/character-chat.ts';
 import '@/ai/flows/generate-homework.ts';
+import '@/ai/flows/generate-math-problem.ts';
+import '@/ai/flows/math-step-feedback.ts';
+import '@/ai/flows/spelling-feedback.ts';
+import '@/ai/flows/analyze-handwriting.ts';
