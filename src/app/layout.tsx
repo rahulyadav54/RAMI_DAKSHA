@@ -1,7 +1,5 @@
-
 'use client';
 
-import type {Metadata} from 'next';
 import './globals.css';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -29,7 +27,7 @@ export default function RootLayout({
       <body className="font-body antialiased min-h-screen bg-background text-foreground overflow-x-hidden">
         <FirebaseClientProvider>
           <SidebarProvider>
-            <div className="flex min-h-screen w-full">
+            <div className="flex min-h-screen w-full overflow-hidden">
               {!isAuthPage && <AppSidebar />}
               <div className="flex flex-col flex-1 min-w-0">
                 {!isAuthPage && (

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from "react";
@@ -13,7 +12,6 @@ import {
   Users, 
   Trophy, 
   LogOut,
-  Sparkles,
   Workflow,
   BookCheck,
   Languages,
@@ -100,10 +98,10 @@ export function AppSidebar() {
       ];
     }
 
-    // Student Role
+    // Student Role (Matches requested list)
     return [
       ...common,
-      { href: "/upload", label: "New Session", icon: PlusCircle, highlight: true },
+      { href: "/upload", label: "New Session", icon: PlusCircle },
       { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
       { href: "/flashcards", label: "Flashcards", icon: Layers },
       { href: "/ai-tutor", label: "AI Tutor", icon: Bot },
