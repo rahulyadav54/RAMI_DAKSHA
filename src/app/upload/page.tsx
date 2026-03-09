@@ -17,6 +17,8 @@ import { generateFlashcards } from "@/ai/flows/generate-flashcards";
 import { parseDocument } from "@/lib/document-parser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -43,6 +45,7 @@ export default function UploadPage() {
         description: `Successfully extracted text from ${file.name}.`,
       });
     } catch (err: any) {
+      console.error(err);
       setError("Failed to process document: " + err.message);
     } finally {
       setIsProcessing(false);
@@ -79,19 +82,28 @@ export default function UploadPage() {
       if (!db) return;
 
       const sessionsRef = collection(db, "users", user.uid, "sessions");
-      const docRef = await addDoc(sessionsRef, {
+      const sessionData = {
         content,
         createdAt: serverTimestamp(),
         readingLevel,
         quiz: quizData,
         studyGuide,
         flashcards: flashcards.cards
-      });
+      };
+
+      addDoc(sessionsRef, sessionData)
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: sessionsRef.path,
+            operation: 'create',
+            requestResourceData: sessionData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
 
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("quiz_content", content);
-      sessionStorage.setItem("current_session_id", docRef.id);
       
       router.push("/quiz/preview");
     } catch (err: any) {

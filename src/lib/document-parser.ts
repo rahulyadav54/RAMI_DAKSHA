@@ -4,9 +4,12 @@
 import * as pdfjs from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
-// Set worker source for PDF parsing using CDN
-const pdfjsVersion = '4.0.379';
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`;
+/**
+ * PDF.js Worker initialization. 
+ * Using a CDN version that matches the package version for reliability in the browser.
+ */
+const PDFJS_VERSION = '4.0.379';
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
 
 /**
  * Extracts text from a File object supporting .txt, .pdf, and .docx formats.
@@ -38,7 +41,14 @@ async function parseTxt(file: File): Promise<string> {
 async function parsePdf(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
+    // Use Uint8Array which is the standard input for getDocument
+    const typedArray = new Uint8Array(arrayBuffer);
+    const loadingTask = pdfjs.getDocument({ 
+      data: typedArray,
+      useWorkerFetch: true,
+      isEvalSupported: false,
+    });
+    
     const pdf = await loadingTask.promise;
     let fullText = '';
 
@@ -51,10 +61,14 @@ async function parsePdf(file: File): Promise<string> {
       fullText += pageText + '\n';
     }
 
+    if (!fullText.trim()) {
+      throw new Error('PDF appears to be empty or contains only images (OCR not supported).');
+    }
+
     return fullText.trim();
   } catch (error: any) {
-    console.error('PDF parsing error:', error);
-    throw new Error('Could not parse PDF file.');
+    console.error('PDF parsing error details:', error);
+    throw new Error(error.message || 'Could not parse PDF file.');
   }
 }
 
