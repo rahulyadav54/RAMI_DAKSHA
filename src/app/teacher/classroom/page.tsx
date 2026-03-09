@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, UserCheck, UserX, UserPlus, Mail, Filter } from "lucide-react";
+import { Loader2, UserCheck, UserX, UserPlus, Mail, Filter, BarChart2 } from "lucide-react";
+import Link from "next/link";
 
 export default function ClassroomPage() {
   const { user } = useUser();
@@ -47,7 +48,7 @@ export default function ClassroomPage() {
 
       <div className="grid gap-6">
         {students.length > 0 ? students.map((student) => (
-          <Card key={student.id} className="rounded-3xl shadow-lg border-none overflow-hidden group">
+          <Card key={student.id} className="rounded-3xl shadow-lg border-none overflow-hidden group transition-all hover:shadow-xl">
             <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-6">
                 <Avatar className="h-16 w-16 border-4 border-primary/10">
@@ -56,7 +57,7 @@ export default function ClassroomPage() {
                 </Avatar>
                 <div>
                   <h3 className="text-xl font-bold">{student.displayName}</h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                     <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {student.email}</span>
                     <Badge variant={student.approved ? "default" : "outline"} className="rounded-full">
                       {student.approved ? "Approved" : "Pending Approval"}
@@ -74,7 +75,11 @@ export default function ClassroomPage() {
                     <UserX className="h-4 w-4 mr-2" /> Revoke
                   </Button>
                 )}
-                <Button size="sm" variant="secondary" className="rounded-xl">View Stats</Button>
+                <Button size="sm" variant="secondary" className="rounded-xl gap-2" asChild>
+                  <Link href={`/teacher/classroom/${student.id}`}>
+                    <BarChart2 className="h-4 w-4" /> View Stats
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
