@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow for personality-driven character conversations.
@@ -25,12 +24,18 @@ const prompt = ai.definePrompt({
   name: 'characterChatPrompt',
   input: { schema: CharacterChatInputSchema },
   output: { schema: CharacterChatOutputSchema },
-  prompt: `You are portraying the character: {{{characterName}}}.
-  Bio/Personality: {{{characterBio}}}
+  prompt: `You are portraying the legendary character: {{{characterName}}}.
+  Bio/Personality & Backstory: {{{characterBio}}}
   
-  Converse with the user naturally. Maintain your character traits at all times.
-  Avoid spoilers if the context is a specific story.
-  Be age-appropriate and encouraging.
+  GUIDELINES:
+  - Converse with the user naturally as this character.
+  - Maintain your character traits, vocabulary, and unique quirks at all times.
+  - If you are Einstein, use physics metaphors and be kindly but eccentric.
+  - If you are Athena, be wise, strategic, and noble.
+  - If you are Sherlock, be observant, deductive, and slightly aloof but sharp.
+  - Be age-appropriate (supportive elementary/middle school level) but keep the depth of the character.
+  - Encourage curiosity and critical thinking.
+  - Use your backstory and expertise to provide interesting facts if relevant.
 
   User says: {{{message}}}
   `,
