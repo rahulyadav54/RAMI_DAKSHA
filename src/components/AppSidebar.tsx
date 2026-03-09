@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -28,7 +29,9 @@ import {
   SidebarMenuButton
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from "@/firebase";
+import { useUser, useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { href: "/upload", label: "Take a Quiz", icon: PlusCircle, highlight: true },
@@ -43,9 +46,29 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useUser();
+  const auth = useAuth();
+  const { toast } = useToast();
 
   if (pathname === "/" || pathname === "/login") return null;
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Signed out",
+        description: "See you again soon!",
+      });
+      router.push("/");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: error.message,
+      });
+    }
+  };
 
   return (
     <Sidebar className="border-r border-primary/5 bg-white/50 backdrop-blur-xl">
@@ -96,7 +119,10 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-6 border-t border-primary/5">
-        <div className="flex items-center gap-4 p-3 rounded-2xl hover:bg-primary/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-primary/10">
+        <div 
+          onClick={handleSignOut}
+          className="flex items-center gap-4 p-3 rounded-2xl hover:bg-destructive/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-destructive/10"
+        >
           <Avatar className="h-11 w-11 border-2 border-white shadow-sm transition-transform group-hover:scale-105">
             <AvatarImage src={`https://picsum.photos/seed/${user?.uid || 'guest'}/100/100`} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
@@ -105,9 +131,9 @@ export function AppSidebar() {
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-foreground truncate">{user?.displayName || "New Scholar"}</p>
-            <Link href="/" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 hover:text-destructive transition-colors">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 group-hover:text-destructive transition-colors">
               <LogOut className="h-3 w-3" /> Sign Out
-            </Link>
+            </p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:translate-x-1 transition-transform" />
         </div>
