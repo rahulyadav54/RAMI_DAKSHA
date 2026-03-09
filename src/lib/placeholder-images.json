@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A smart learning environment with AI elements",
+      "imageUrl": "https://picsum.photos/seed/reading-hero/1200/800",
+      "imageHint": "education technology"
+    },
+    {
+      "id": "student-profile",
+      "description": "Student avatar",
+      "imageUrl": "https://picsum.photos/seed/student/150/150",
+      "imageHint": "student portrait"
+    }
+  ]
 }
