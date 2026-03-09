@@ -7,7 +7,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
-  GoogleAuthProvider 
+  GoogleAuthProvider,
+  updateProfile
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuth, useFirestore } from "@/firebase";
@@ -15,13 +16,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, Github, Loader2 } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const auth = useAuth();
@@ -41,13 +43,18 @@ export default function LoginPage() {
       } else {
         const res = await createUserWithEmailAndPassword(auth, email, password);
         user = res.user;
+        
+        // Update the user's display name in Firebase Auth
+        await updateProfile(user, { displayName });
+
+        // Save the user profile to Firestore
         await setDoc(doc(db, "users", user.uid), {
           uid: user.uid,
           email: user.email,
           role: "student",
           gradeLevel: 1,
           totalPoints: 0,
-          displayName: user.displayName || email.split("@")[0]
+          displayName: displayName
         });
       }
       router.push("/dashboard");
@@ -79,7 +86,7 @@ export default function LoginPage() {
           role: "student",
           gradeLevel: 1,
           totalPoints: 0,
-          displayName: user.displayName
+          displayName: user.displayName || "New Reader"
         });
       }
       router.push("/dashboard");
@@ -112,6 +119,18 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name / Username</Label>
+                <Input 
+                  id="name" 
+                  placeholder="How should we call you?" 
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  required={!isLogin}
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
