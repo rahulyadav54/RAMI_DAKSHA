@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, User, Volume2, Sparkles, BrainCircuit, History, Info } from "lucide-react";
+import { Bot, Send, User, Volume2, Sparkles, BrainCircuit, History, Mic, MicOff, Info } from "lucide-react";
 import { characterChat } from "@/ai/flows/character-chat";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useUser, useFirestore } from "@/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const CHARACTERS = [
   { 
@@ -60,18 +62,58 @@ const CHARACTERS = [
 ];
 
 export default function CharacterChatPage() {
+  const { user } = useUser();
+  const db = useFirestore();
   const [selectedChar, setSelectedChar] = useState(CHARACTERS[0]);
   const [messages, setMessages] = useState<{role: 'user' | 'model', content: string}[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Speech Recognition Setup
+  const [recognition, setRecognition] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'en-US';
+
+      recognitionInstance.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognitionInstance.onerror = () => {
+        setIsListening(false);
+        toast({ variant: "destructive", title: "Mic Error", description: "Could not hear you. Please try again." });
+      };
+
+      recognitionInstance.onend = () => setIsListening(false);
+
+      setRecognition(recognitionInstance);
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isLoading]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognition?.stop();
+    } else {
+      recognition?.start();
+      setIsListening(true);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -88,7 +130,20 @@ export default function CharacterChatPage() {
         message: userMsg,
         history: messages
       });
-      setMessages(prev => [...prev, { role: 'model', content: response.response }]);
+      
+      const botMsg = response.response;
+      setMessages(prev => [...prev, { role: 'model', content: botMsg }]);
+
+      // Log Interaction to Firestore
+      if (user && db) {
+        addDoc(collection(db, "users", user.uid, "interactions"), {
+          characterName: selectedChar.name,
+          messages: [...messages, { role: 'user', content: userMsg }, { role: 'model', content: botMsg }],
+          createdAt: serverTimestamp(),
+          studentId: user.uid
+        });
+      }
+
     } catch (err) {
       toast({ 
         variant: "destructive", 
@@ -265,6 +320,15 @@ export default function CharacterChatPage() {
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
                 className="flex gap-2 items-center bg-slate-100 p-1.5 rounded-full border border-transparent focus-within:border-primary/20 focus-within:bg-white focus-within:shadow-md transition-all duration-300"
               >
+                <Button 
+                  type="button" 
+                  size="icon" 
+                  variant="ghost" 
+                  className={cn("h-10 w-10 rounded-full", isListening ? "text-red-500 animate-pulse bg-red-50" : "text-slate-400")}
+                  onClick={toggleListening}
+                >
+                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </Button>
                 <Input 
                   placeholder={`Speak with ${selectedChar.name.split(' ')[0]}...`} 
                   className="flex-1 h-10 rounded-full border-none bg-transparent text-sm focus-visible:ring-0 shadow-none px-4"
