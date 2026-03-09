@@ -118,8 +118,8 @@ export default function CharacterChatPage() {
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       {/* Dynamic Header - Character Switcher */}
-      <header className="bg-white border-b px-4 md:px-8 h-20 flex items-center justify-between shrink-0 z-20 shadow-sm">
-        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar max-w-[70%]">
+      <header className="bg-white border-b px-4 md:px-8 h-16 flex items-center justify-between shrink-0 z-20 shadow-sm">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-[70%]">
           {CHARACTERS.map(char => (
             <button 
               key={char.id} 
@@ -129,69 +129,69 @@ export default function CharacterChatPage() {
                 window.speechSynthesis.cancel();
               }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full transition-all whitespace-nowrap border-2",
+                "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all whitespace-nowrap border",
                 selectedChar.id === char.id 
-                  ? "bg-slate-900 border-slate-900 text-white shadow-md scale-105" 
+                  ? "bg-slate-900 border-slate-900 text-white shadow-sm" 
                   : "bg-white border-slate-100 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
               )}
             >
-              <Avatar className="h-6 w-6">
+              <Avatar className="h-5 w-5">
                 <AvatarImage src={char.avatar} />
                 <AvatarFallback>{char.name[0]}</AvatarFallback>
               </Avatar>
-              <span className="font-headline font-bold text-xs uppercase tracking-tight">{char.name}</span>
+              <span className="font-headline font-bold text-[10px] uppercase tracking-tight">{char.name.split(' ')[0]}</span>
             </button>
           ))}
         </div>
-        <Button variant="outline" size="sm" className="rounded-full font-bold text-xs" onClick={() => setMessages([])}>
-          <History className="h-4 w-4 mr-2" /> Clear
+        <Button variant="outline" size="sm" className="rounded-full font-bold text-[10px] h-8" onClick={() => setMessages([])}>
+          <History className="h-3 w-3 mr-1" /> Clear
         </Button>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Character Bio */}
-        <aside className="hidden lg:flex flex-col w-80 bg-white border-r p-8 space-y-8 overflow-y-auto">
-          <div className="space-y-6">
-            <div className={cn("h-48 w-full rounded-3xl bg-gradient-to-br flex items-center justify-center p-4 shadow-inner", selectedChar.color)}>
-              <Avatar className="h-32 w-32 border-4 border-white shadow-2xl">
+        <aside className="hidden lg:flex flex-col w-64 bg-white border-r p-6 space-y-6 overflow-y-auto">
+          <div className="space-y-4">
+            <div className={cn("h-32 w-full rounded-2xl bg-gradient-to-br flex items-center justify-center p-3 shadow-inner", selectedChar.color)}>
+              <Avatar className="h-20 w-20 border-2 border-white shadow-lg">
                 <AvatarImage src={selectedChar.avatar} />
                 <AvatarFallback>{selectedChar.name[0]}</AvatarFallback>
               </Avatar>
             </div>
             
-            <div className="space-y-2 text-center">
-              <h2 className="text-2xl font-headline font-black text-slate-900">{selectedChar.name}</h2>
-              <Badge variant="secondary" className="rounded-full px-4 py-1 text-[10px] font-black uppercase tracking-widest">
+            <div className="space-y-1 text-center">
+              <h2 className="text-lg font-headline font-black text-slate-900 leading-tight">{selectedChar.name}</h2>
+              <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest">
                 {selectedChar.title}
               </Badge>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 italic text-slate-600 text-sm leading-relaxed">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 italic text-slate-600 text-xs leading-relaxed">
               "{selectedChar.bio}"
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Capabilities</h4>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500">History</Badge>
-              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500">Wisdom</Badge>
-              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500">Logic</Badge>
+          <div className="space-y-2">
+            <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Capabilities</h4>
+            <div className="flex flex-wrap gap-1">
+              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500 text-[9px]">History</Badge>
+              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500 text-[9px]">Wisdom</Badge>
+              <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500 text-[9px]">Logic</Badge>
             </div>
           </div>
         </aside>
 
         {/* Main Chat Interface */}
         <main className="flex-1 flex flex-col relative bg-white">
-          <ScrollArea className="flex-1 px-4 md:px-12">
-            <div className="max-w-4xl mx-auto py-12 space-y-12">
+          <ScrollArea className="flex-1 px-4 md:px-8">
+            <div className="max-w-3xl mx-auto py-6 space-y-4">
               {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-700">
-                  <div className={cn("h-24 w-24 rounded-[2.5rem] flex items-center justify-center text-white shadow-xl mb-8 rotate-3", selectedChar.color)}>
-                    <Bot className="h-12 w-12" />
+                <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-500">
+                  <div className={cn("h-16 w-16 rounded-2xl flex items-center justify-center text-white shadow-lg mb-6 rotate-3", selectedChar.color)}>
+                    <Bot className="h-8 w-8" />
                   </div>
-                  <h3 className="text-4xl font-headline font-black text-slate-900 tracking-tight mb-4">The legend is listening...</h3>
-                  <p className="text-xl text-slate-500 font-medium max-w-lg">
+                  <h3 className="text-2xl font-headline font-black text-slate-900 tracking-tight mb-2">The legend is listening...</h3>
+                  <p className="text-base text-slate-500 font-medium max-w-md">
                     {selectedChar.greeting}
                   </p>
                 </div>
@@ -199,29 +199,29 @@ export default function CharacterChatPage() {
 
               {messages.map((msg, i) => (
                 <div key={i} className={cn(
-                  "flex gap-4 md:gap-6 animate-in slide-in-from-bottom-4 duration-500",
+                  "flex gap-3 animate-in slide-in-from-bottom-2 duration-300",
                   msg.role === 'user' ? 'flex-row-reverse' : ''
                 )}>
                   <Avatar className={cn(
-                    "h-12 w-12 shrink-0 shadow-lg border-2 border-white mt-1",
+                    "h-8 w-8 shrink-0 shadow-md border border-white mt-1",
                     msg.role === 'model' ? "bg-white" : "bg-slate-900"
                   )}>
                     {msg.role === 'model' ? (
                       <AvatarImage src={selectedChar.avatar} />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center text-white bg-slate-900">
-                        <User className="h-6 w-6" />
+                        <User className="h-4 w-4" />
                       </div>
                     )}
                     <AvatarFallback>{msg.role === 'model' ? selectedChar.name[0] : 'U'}</AvatarFallback>
                   </Avatar>
                   
                   <div className={cn(
-                    "flex flex-col max-w-[85%] sm:max-w-[80%]",
+                    "flex flex-col max-w-[85%]",
                     msg.role === 'user' ? "items-end" : "items-start"
                   )}>
                     <div className={cn(
-                      "p-6 rounded-[2rem] text-lg leading-relaxed shadow-sm border",
+                      "p-3 px-4 rounded-2xl text-sm leading-relaxed shadow-sm border",
                       msg.role === 'model' 
                         ? 'bg-white text-slate-800 rounded-tl-none border-slate-100' 
                         : 'bg-slate-900 text-white rounded-tr-none border-slate-900'
@@ -232,10 +232,10 @@ export default function CharacterChatPage() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="mt-3 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary h-8"
+                        className="mt-1 rounded-full text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary h-6"
                         onClick={() => speak(msg.content)}
                       >
-                        <Volume2 className="h-3 w-3 mr-2" /> Listen to Voice
+                        <Volume2 className="h-2.5 w-2.5 mr-1" /> Speak
                       </Button>
                     )}
                   </div>
@@ -243,31 +243,31 @@ export default function CharacterChatPage() {
               ))}
               
               {isLoading && (
-                <div className="flex gap-4 md:gap-6">
-                  <Avatar className="h-12 w-12 shrink-0 shadow-lg border-2 border-white bg-white">
+                <div className="flex gap-3">
+                  <Avatar className="h-8 w-8 shrink-0 shadow-md border border-white bg-white">
                     <AvatarImage src={selectedChar.avatar} />
                   </Avatar>
-                  <div className="bg-white p-6 rounded-[2rem] rounded-tl-none shadow-sm border border-slate-100 flex gap-2 items-center">
-                    <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce" />
-                    <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:0.2s]" />
-                    <span className="h-2 w-2 rounded-full bg-slate-300 animate-bounce [animation-delay:0.4s]" />
+                  <div className="bg-white p-3 px-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 flex gap-1 items-center">
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-bounce" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-bounce [animation-delay:0.2s]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300 animate-bounce [animation-delay:0.4s]" />
                   </div>
                 </div>
               )}
-              <div ref={scrollRef} className="h-12" />
+              <div ref={scrollRef} className="h-4" />
             </div>
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="p-6 md:p-10 bg-white border-t border-slate-100 shrink-0">
-            <div className="max-w-4xl mx-auto">
+          <div className="p-4 md:p-6 bg-white border-t border-slate-100 shrink-0">
+            <div className="max-w-3xl mx-auto">
               <form 
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-                className="flex gap-4 items-center bg-slate-100 p-2 rounded-full border-2 border-transparent focus-within:border-primary/20 focus-within:bg-white focus-within:shadow-xl transition-all duration-300"
+                className="flex gap-2 items-center bg-slate-100 p-1.5 rounded-full border border-transparent focus-within:border-primary/20 focus-within:bg-white focus-within:shadow-md transition-all duration-300"
               >
                 <Input 
                   placeholder={`Speak with ${selectedChar.name.split(' ')[0]}...`} 
-                  className="flex-1 h-12 md:h-14 rounded-full border-none bg-transparent text-base md:text-lg focus-visible:ring-0 shadow-none px-6"
+                  className="flex-1 h-10 rounded-full border-none bg-transparent text-sm focus-visible:ring-0 shadow-none px-4"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading}
@@ -275,14 +275,14 @@ export default function CharacterChatPage() {
                 <Button 
                   type="submit" 
                   size="icon" 
-                  className={cn("h-12 w-12 md:h-14 md:w-14 rounded-full shadow-lg transition-transform active:scale-90", selectedChar.color)}
+                  className={cn("h-10 w-10 rounded-full shadow-md transition-transform active:scale-95", selectedChar.color)}
                   disabled={isLoading || !input.trim()}
                 >
-                  <Send className="h-6 w-6" />
+                  <Send className="h-4 w-4" />
                 </Button>
               </form>
-              <p className="text-center mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-slate-300 flex items-center justify-center gap-2">
-                 <BrainCircuit className="h-3 w-3" /> SmartRead Legend Engine
+              <p className="text-center mt-2 text-[8px] font-black uppercase tracking-[0.2em] text-slate-300 flex items-center justify-center gap-1">
+                 <BrainCircuit className="h-2 w-2" /> SmartRead Legend Engine
               </p>
             </div>
           </div>
