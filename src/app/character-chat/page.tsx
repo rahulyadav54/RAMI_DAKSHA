@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Bot, Send, User, Mic, Volume2, Sparkles, Languages, History, BrainCircuit, Search } from "lucide-react";
 import { characterChat } from "@/ai/flows/character-chat";
 import { useToast } from "@/hooks/use-toast";
@@ -87,10 +88,8 @@ export default function CharacterChatPage() {
 
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
-      // Cancel any current speech
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      // Adjust pitch/rate based on character
       if (selectedChar.id === 'einstein') {
         utterance.pitch = 1.1;
         utterance.rate = 0.9;
@@ -105,7 +104,6 @@ export default function CharacterChatPage() {
   return (
     <div className="container mx-auto p-4 md:p-8 h-[calc(100vh-2rem)] flex flex-col max-w-6xl gap-6 animate-in fade-in duration-700">
       
-      {/* Character Selection */}
       <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
         {CHARACTERS.map(char => (
           <button 
@@ -134,10 +132,8 @@ export default function CharacterChatPage() {
         ))}
       </div>
 
-      {/* Main Chat Area */}
       <div className="flex-1 grid lg:grid-cols-3 gap-6 overflow-hidden">
         
-        {/* Profile Sidebar */}
         <Card className="hidden lg:flex flex-col border-none shadow-2xl rounded-[2.5rem] bg-gradient-to-br from-white to-muted/20 overflow-hidden">
           <div className={cn("h-32 w-full bg-gradient-to-r relative", selectedChar.color)}>
              <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]" />
@@ -168,7 +164,6 @@ export default function CharacterChatPage() {
           </div>
         </Card>
 
-        {/* Chat Window */}
         <Card className="lg:col-span-2 flex flex-col shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white relative">
           <CardHeader className={cn("bg-gradient-to-r p-6 text-white flex flex-row items-center justify-between", selectedChar.color)}>
             <div className="flex items-center gap-4">
