@@ -27,7 +27,8 @@ import {
   Layers,
   Presentation,
   Image as ImageIcon,
-  BookOpen
+  BookOpen,
+  BookCheck
 } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
@@ -37,10 +38,7 @@ import { generateFlowchart } from "@/ai/flows/generate-flowchart";
 import { parseDocument } from "@/lib/document-parser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 export default function UploadPage() {
   const router = useRouter();
