@@ -61,7 +61,9 @@ export default function HomeworkPage() {
       };
       
       const newDoc = await addDoc(homeworkRef, data);
-      setHistory(prev => [{ id: newDoc.id, ...data }, ...prev]);
+      
+      // Optimistically update history with a JS Date to avoid toDate() crash
+      setHistory(prev => [{ id: newDoc.id, ...data, createdAt: new Date() }, ...prev]);
       setAssignments(result.assignments);
       
       toast({ title: "Homework Ready!", description: "Tailored to your recent performance." });
@@ -70,6 +72,13 @@ export default function HomeworkPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const formatDate = (val: any) => {
+    if (!val) return "Just now";
+    if (typeof val.toDate === 'function') return val.toDate().toLocaleDateString();
+    if (val instanceof Date) return val.toLocaleDateString();
+    return "Just now";
   };
 
   return (
@@ -132,7 +141,7 @@ export default function HomeworkPage() {
                 <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-muted/40 text-sm">
                   <div className="space-y-1">
                     <p className="font-bold">Task {history.length - i}</p>
-                    <p className="text-xs text-muted-foreground">{item.createdAt?.toDate().toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(item.createdAt)}</p>
                   </div>
                   <Badge variant={item.isCompleted ? "default" : "secondary"}>
                     {item.isCompleted ? "Done" : "Pending"}

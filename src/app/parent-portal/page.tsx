@@ -2,23 +2,20 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot, where } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { useUser, useFirestore } from "@/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, Mail, TrendingUp, Calendar, AlertCircle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Mail, TrendingUp, Calendar, AlertCircle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
 } from "recharts";
 
@@ -50,6 +47,13 @@ export default function ParentPortalPage() {
       unsubAttempts();
     };
   }, [user, db]);
+
+  const formatDate = (val: any) => {
+    if (!val) return "Just now";
+    if (typeof val.toDate === 'function') return val.toDate().toLocaleDateString();
+    if (val instanceof Date) return val.toLocaleDateString();
+    return "Just now";
+  };
 
   if (loading || isSyncing) return (
     <div className="h-screen flex flex-col items-center justify-center gap-4">
@@ -141,7 +145,7 @@ export default function ParentPortalPage() {
                   <div>
                     <p className="font-bold">Assessment #{recentAttempts.length - i}</p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> {attempt.completedAt?.toDate().toLocaleDateString()}
+                      <Calendar className="h-3 w-3" /> {formatDate(attempt.completedAt)}
                     </p>
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -65,7 +66,7 @@ export default function Dashboard() {
         id: doc.id, 
         ...doc.data(),
         // Format date for chart
-        date: doc.data().completedAt?.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        date: doc.data().completedAt?.toDate?.()?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) || '...'
       }));
       setAttempts(data);
 
@@ -93,6 +94,13 @@ export default function Dashboard() {
       unsubscribeAttempts();
     };
   }, [user, loading, db, router]);
+
+  const formatDate = (val: any) => {
+    if (!val) return "Just now";
+    if (typeof val.toDate === 'function') return val.toDate().toLocaleDateString();
+    if (val instanceof Date) return val.toLocaleDateString();
+    return "Just now";
+  };
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center gap-4">
@@ -204,7 +212,7 @@ export default function Dashboard() {
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {s.createdAt?.toDate().toLocaleDateString()}
+                        {formatDate(s.createdAt)}
                         <Badge variant="secondary" className="ml-2 text-[10px]">
                           Grade {s.readingLevel?.gradeLevelScore || "?"}
                         </Badge>
@@ -221,7 +229,7 @@ export default function Dashboard() {
                   </div>
                 )}
                 <Button variant="outline" className="w-full h-12 rounded-xl border-dashed" asChild>
-                  <Link href="/history">View Full Library</Link>
+                  <Link href="/upload">New Session</Link>
                 </Button>
               </div>
             </CardContent>
