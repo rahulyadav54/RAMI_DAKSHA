@@ -5,12 +5,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  BookOpen, 
+  Bot, 
   LayoutDashboard, 
   PlusCircle, 
   Zap, 
   Layers, 
-  Bot, 
   FileText, 
   Users, 
   Trophy, 
@@ -76,6 +75,7 @@ export function AppSidebar() {
     }
   };
 
+  // Only display user-specific data after mounting on the client to avoid hydration mismatch
   const displayName = mounted && user ? (user.displayName || "Scholar") : "Scholar";
   const userUid = mounted && user ? user.uid : "guest";
 
@@ -128,12 +128,12 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-6 border-t border-primary/5">
-        <button 
+        <div 
           onClick={handleSignOut}
           className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-destructive/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-destructive/10 text-left"
         >
           <Avatar className="h-11 w-11 border-2 border-white shadow-sm transition-transform group-hover:scale-105">
-            <AvatarImage src={`https://picsum.photos/seed/${userUid}/100/100`} />
+            <AvatarImage src={mounted ? `https://picsum.photos/seed/${userUid}/100/100` : undefined} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {displayName.substring(0, 2).toUpperCase()}
             </AvatarFallback>
@@ -145,7 +145,7 @@ export function AppSidebar() {
             </p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:translate-x-1 transition-transform" />
-        </button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
