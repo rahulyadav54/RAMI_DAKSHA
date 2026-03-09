@@ -12,7 +12,23 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertCircle, Sparkles, FileUp, Settings2, Clock, BarChart } from "lucide-react";
+import { 
+  Loader2, 
+  AlertCircle, 
+  Sparkles, 
+  FileUp, 
+  Settings2, 
+  Clock, 
+  BarChart,
+  Headphones,
+  Video,
+  Workflow,
+  FileSpreadsheet,
+  Layers,
+  Presentation,
+  Image as ImageIcon,
+  BookOpen
+} from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
@@ -24,13 +40,14 @@ import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function UploadPage() {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showConfig, setShowConfig] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   
   const [mcqCount, setMcqCount] = useState(3);
   const [shortCount, setShortCount] = useState(2);
@@ -54,7 +71,8 @@ export default function UploadPage() {
     try {
       const text = await parseDocument(file);
       setContent(text);
-      setShowConfig(true);
+      setShowTools(true);
+      sessionStorage.setItem("quiz_content", text);
       toast({
         title: "Document processed",
         description: `Successfully extracted text from ${file.name}.`,
@@ -68,18 +86,9 @@ export default function UploadPage() {
     }
   };
 
-  const handleGenerate = async () => {
+  const handleBuildAssessment = async () => {
     if (!content.trim()) {
       setError("Please provide some text content or upload a document first.");
-      return;
-    }
-
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "You must be logged in to save your learning sessions."
-      });
-      router.push("/login");
       return;
     }
 
@@ -102,7 +111,14 @@ export default function UploadPage() {
         generateFlowchart({ content })
       ]);
       
-      if (!db) return;
+      if (!db || !user) {
+         sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
+         sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
+         sessionStorage.setItem("last_flowchart", flowchart.mermaidCode);
+         sessionStorage.setItem("quiz_timer", timerSeconds.toString());
+         router.push("/quiz/preview");
+         return;
+      }
 
       const sessionsRef = collection(db, "users", user.uid, "sessions");
       const sessionData = {
@@ -123,20 +139,11 @@ export default function UploadPage() {
         }
       };
 
-      addDoc(sessionsRef, sessionData)
-        .catch(async (serverError) => {
-          const permissionError = new FirestorePermissionError({
-            path: sessionsRef.path,
-            operation: 'create',
-            requestResourceData: sessionData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
+      await addDoc(sessionsRef, sessionData);
 
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("last_flowchart", flowchart.mermaidCode);
-      sessionStorage.setItem("quiz_content", content);
       sessionStorage.setItem("quiz_timer", timerSeconds.toString());
       sessionStorage.setItem("current_session_id", "new-temp-session"); 
       
@@ -148,22 +155,34 @@ export default function UploadPage() {
     }
   };
 
-  return (
-    <div className="container mx-auto p-4 md:p-12 max-w-5xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
-      <div className="grid gap-12 lg:grid-cols-12">
-        <div className="lg:col-span-12 space-y-6 text-center mb-4">
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-full px-4 py-1.5 font-bold uppercase tracking-widest text-[10px]">
-            <Sparkles className="h-3 w-3 mr-2" /> AI Intelligence Hub
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-headline font-black tracking-tight text-foreground">
-            Create Your <span className="text-primary">Study Kit</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            The smarter way to master any material. Upload, configure, and let the AI build your personalized learning environment.
-          </p>
-        </div>
+  const tools = [
+    { name: "Audio Overview", icon: Headphones, href: "/podcast", color: "bg-blue-500", desc: "Generate an AI podcast based on your sources" },
+    { name: "Video Summary", icon: Video, href: "/video", color: "bg-purple-500", desc: "Create a short cinematic overview" },
+    { name: "Mind Map", icon: Workflow, href: "/flowchart", color: "bg-emerald-500", desc: "Visualize concepts and logic" },
+    { name: "Study Guide", icon: FileSpreadsheet, href: "/study-guide", color: "bg-amber-500", desc: "Comprehensive summary & key points" },
+    { name: "Flashcards", icon: Layers, href: "/flashcards", color: "bg-rose-500", desc: "Master terms with active recall" },
+    { name: "Quiz Hub", icon: BookCheck, href: "#", onClick: handleBuildAssessment, color: "bg-indigo-500", desc: "AI-generated adaptive assessment" },
+    { name: "Infographic", icon: ImageIcon, href: "/infographic", color: "bg-orange-500", desc: "Visual concept visualization" },
+    { name: "Slide Deck", icon: Presentation, href: "/slides", color: "bg-teal-500", desc: "Generate a structured presentation" },
+    { name: "Data Table", icon: FileSpreadsheet, href: "/data-table", color: "bg-slate-500", desc: "Extract structured tabular data" },
+  ];
 
-        <Card className="lg:col-span-7 border-none shadow-2xl shadow-primary/5 bg-white/50 backdrop-blur-sm rounded-[2.5rem] overflow-hidden">
+  return (
+    <div className="container mx-auto p-4 md:p-12 max-w-7xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="space-y-6 text-center mb-12">
+        <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-full px-4 py-1.5 font-bold uppercase tracking-widest text-[10px]">
+          <Sparkles className="h-3 w-3 mr-2" /> AI Intelligence Hub
+        </Badge>
+        <h1 className="text-4xl md:text-6xl font-headline font-black tracking-tight text-foreground">
+          Create Your <span className="text-primary">Study Kit</span>
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Upload any material and watch our AI transform it into a personalized interactive study ecosystem.
+        </p>
+      </div>
+
+      <div className="grid gap-12 lg:grid-cols-12">
+        <Card className="lg:col-span-12 border-none shadow-2xl shadow-primary/5 bg-white rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-2xl font-bold font-headline">Reading Material</CardTitle>
@@ -197,97 +216,100 @@ export default function UploadPage() {
             )}
             
             <Textarea
-              placeholder="Paste text or upload a document..."
-              className="min-h-[300px] resize-none text-lg p-8 rounded-[2rem] border-none bg-muted/30 focus-visible:ring-primary shadow-inner"
+              placeholder="Paste text or upload a document to get started..."
+              className="min-h-[250px] resize-none text-lg p-8 rounded-[2rem] border-none bg-muted/30 focus-visible:ring-primary shadow-inner"
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
-                if (e.target.value.length > 50) setShowConfig(true);
+                sessionStorage.setItem("quiz_content", e.target.value);
+                if (e.target.value.length > 20) setShowTools(true);
               }}
               disabled={isProcessing}
             />
           </CardContent>
         </Card>
 
-        <div className="lg:col-span-5 space-y-6">
-          <Card className={cn(
-            "border-none shadow-2xl shadow-primary/5 bg-white/50 backdrop-blur-sm rounded-[2.5rem] transition-all duration-700",
-            showConfig ? "opacity-100 translate-x-0" : "opacity-50 blur-sm pointer-events-none translate-x-4"
-          )}>
-            <CardHeader className="p-8">
-              <CardTitle className="text-2xl font-bold font-headline flex items-center gap-2">
-                <Settings2 className="h-6 w-6 text-primary" /> Configuration
-              </CardTitle>
-              <CardDescription>Tailor the AI's generation parameters.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-8">
+        {showTools && (
+          <div className="lg:col-span-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-in zoom-in duration-500">
+            {tools.map((tool, i) => (
+              <Card 
+                key={i} 
+                className="group relative overflow-hidden border-none shadow-xl rounded-3xl bg-white hover:scale-[1.02] transition-all cursor-pointer"
+                onClick={() => {
+                  if (tool.onClick) {
+                    tool.onClick();
+                  } else {
+                    router.push(tool.href);
+                  }
+                }}
+              >
+                <div className={cn("absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity", tool.color)} />
+                <CardContent className="p-8 flex items-start gap-6">
+                  <div className={cn("p-4 rounded-2xl text-white shadow-lg shrink-0", tool.color)}>
+                    <tool.icon className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold font-headline">{tool.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{tool.desc}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showTools && (
+        <Card className="mt-12 border-none shadow-2xl rounded-[2.5rem] bg-muted/20">
+          <CardHeader className="p-8">
+            <CardTitle className="text-xl font-bold font-headline flex items-center gap-2">
+              <Settings2 className="h-5 w-5 text-primary" /> Assessment Config
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8 pt-0 grid gap-8 md:grid-cols-2">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Multiple Choice</Label>
-                  <Input type="number" value={mcqCount} onChange={(e) => setMcqCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                  <Input type="number" value={mcqCount} onChange={(e) => setMcqCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-white border-none" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Short Answer</Label>
-                  <Input type="number" value={shortCount} onChange={(e) => setShortCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                  <Input type="number" value={shortCount} onChange={(e) => setShortCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-white border-none" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">True / False</Label>
-                  <Input type="number" value={tfCount} onChange={(e) => setTfCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                  <Input type="number" value={tfCount} onChange={(e) => setTfCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-white border-none" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Fill in Blanks</Label>
-                  <Input type="number" value={blankCount} onChange={(e) => setBlankCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                  <Input type="number" value={blankCount} onChange={(e) => setBlankCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-white border-none" />
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="bg-primary/5 p-6 rounded-3xl space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <Label className="font-bold text-sm">Timer (sec/question)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Timer (sec/q)</Label>
+                    <Input type="number" value={timerSeconds} onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} className="h-12 rounded-2xl bg-white border-none" />
                   </div>
-                  <Input type="number" value={timerSeconds} onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} className="h-12 rounded-2xl bg-white border-none" />
-                </div>
-
-                <div className="bg-primary/5 p-6 rounded-3xl space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BarChart className="h-4 w-4 text-primary" />
-                    <Label className="font-bold text-sm">Difficulty Level</Label>
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Difficulty</Label>
+                    <Select value={difficulty} onValueChange={(v: any) => setDifficulty(v)}>
+                      <SelectTrigger className="h-12 rounded-2xl bg-white border-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={difficulty} onValueChange={(v: any) => setDifficulty(v)}>
-                    <SelectTrigger className="h-12 rounded-2xl bg-white border-none">
-                      <SelectValue placeholder="Select difficulty" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="easy">Easy (Recall)</SelectItem>
-                      <SelectItem value="intermediate">Intermediate (Inference)</SelectItem>
-                      <SelectItem value="hard">Hard (Analysis)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
-
-              <Button 
-                className="w-full h-16 text-xl rounded-2xl shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-all gap-3 font-bold" 
-                onClick={handleGenerate}
-                disabled={isProcessing || !content.trim()}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                    Synthesizing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-6 w-6" />
-                    Build Assessment
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
