@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to generate an AI podcast summary (audio) from text content.
@@ -8,8 +7,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import wav from 'wav';
 import { googleAI } from '@genkit-ai/google-genai';
-
-export const maxDuration = 60; // Increase timeout for Vercel
 
 const GeneratePodcastInputSchema = z.object({
   content: z.string().describe('The text content to convert into a podcast overview.'),

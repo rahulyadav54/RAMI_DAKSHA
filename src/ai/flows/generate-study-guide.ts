@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to generate a structured study guide from text content.
@@ -6,8 +5,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-
-export const maxDuration = 60;
 
 const GenerateStudyGuideInputSchema = z.object({
   content: z.string().describe('The text content to summarize into a study guide.'),

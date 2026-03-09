@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for detecting the reading level of provided text content.
@@ -6,8 +5,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-export const maxDuration = 60;
 
 const DetectReadingLevelInputSchema = z.object({
   text: z.string().describe('The text content to analyze for reading level.'),

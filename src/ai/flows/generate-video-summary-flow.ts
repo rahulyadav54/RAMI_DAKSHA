@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to generate a short AI video summary using Veo.
@@ -7,8 +6,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
-
-export const maxDuration = 60; // Increase timeout for Vercel
 
 const GenerateVideoInputSchema = z.object({
   content: z.string().describe('The text content to visualize in a video summary.'),

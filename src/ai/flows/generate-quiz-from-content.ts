@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow for generating various types of comprehension questions
@@ -7,8 +6,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-
-export const maxDuration = 60;
 
 const GenerateQuizFromContentInputSchema = z.object({
   content: z.string().describe('The text content from which to generate questions.'),
