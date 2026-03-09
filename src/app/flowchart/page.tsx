@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Workflow, Download, ZoomIn, ZoomOut, RefreshCw } from "lucide-react";
+import { Loader2, Workflow, Download, ZoomIn, ZoomOut, RefreshCw, AlertCircle } from "lucide-react";
 import mermaid from "mermaid";
 
 export default function FlowchartPage() {

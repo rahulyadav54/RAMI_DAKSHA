@@ -30,7 +30,8 @@ const prompt = ai.definePrompt({
   The output MUST be a valid Mermaid.js flowchart definition. 
   - Start with "graph TD" (Top-Down) or "graph LR" (Left-Right).
   - Use concise labels for nodes.
-  - Avoid special characters like quotes or parentheses inside node labels unless properly escaped.
+  - CRITICAL: Wrap all node labels in double quotes to prevent syntax errors with special characters. Example: A["Step One (Start)"] --> B["Step Two"]
+  - Avoid using characters like [], (), or quotes inside the labels themselves.
   - Ensure the logic flows correctly based on the text.
 
   Content: """{{{content}}}"""
