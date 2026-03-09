@@ -217,7 +217,7 @@ export default function LandingPage() {
           </nav>
         </div>
         <div className="container px-6 lg:px-12 mx-auto mt-20 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">© 2024 SmartRead AI Labs. Designed for academic excellence.</p>
+           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">© 2026 developed by Ramiyaa S</p>
            <div className="flex gap-8">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status: Operational</p>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Version: 2.1.0</p>
