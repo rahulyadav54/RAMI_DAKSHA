@@ -29,25 +29,28 @@ export const generatePodcastFlow = ai.defineFlow(
     outputSchema: GeneratePodcastOutputSchema,
   },
   async (input) => {
-    // 1. Generate the script
+    // 1. Generate the script using a structured object schema for stability
     const scriptPrompt = ai.definePrompt({
       name: 'podcastScriptPrompt',
       input: { schema: GeneratePodcastInputSchema },
-      output: { schema: z.string() },
+      output: { 
+        schema: z.object({
+          transcript: z.string().describe('The full conversational transcript between Host1 and Host2.')
+        })
+      },
       prompt: `You are an expert podcast writer. Create a natural, engaging conversation between two speakers, Host1 and Host2, summarizing the following content.
       The conversation should be informative, slightly casual, and explain the key concepts clearly for a student.
       
-      Format:
-      Host1: [Dialogue]
-      Host2: [Dialogue]
-      ...
+      Structure the response as a single string transcript where speakers are identified as 'Host1:' and 'Host2:'.
       
       Content: """{{{content}}}"""
       `,
     });
 
-    const { output: transcript } = await scriptPrompt(input);
-    if (!transcript) throw new Error('Failed to generate podcast script.');
+    const { output } = await scriptPrompt(input);
+    if (!output || !output.transcript) throw new Error('Failed to generate podcast script: Empty output.');
+    
+    const transcript = output.transcript;
 
     // 2. Generate the Audio using TTS
     const { media } = await ai.generate({
