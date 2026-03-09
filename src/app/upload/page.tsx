@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp, BookOpen, Settings2, Clock } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
@@ -209,48 +208,65 @@ export default function UploadPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label className="text-sm font-bold">Multiple Choice</Label>
-                        <span className="text-xs font-bold text-primary">{mcqCount}</span>
-                      </div>
-                      <Slider value={[mcqCount]} min={0} max={10} step={1} onValueChange={([v]) => setMcqCount(v)} />
+                      <Label className="text-sm font-bold">Multiple Choice</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={mcqCount} 
+                        onChange={(e) => setMcqCount(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label className="text-sm font-bold">Short Answer</Label>
-                        <span className="text-xs font-bold text-primary">{shortCount}</span>
-                      </div>
-                      <Slider value={[shortCount]} min={0} max={10} step={1} onValueChange={([v]) => setShortCount(v)} />
+                      <Label className="text-sm font-bold">Short Answer</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={shortCount} 
+                        onChange={(e) => setShortCount(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl"
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label className="text-sm font-bold">True / False</Label>
-                        <span className="text-xs font-bold text-primary">{tfCount}</span>
-                      </div>
-                      <Slider value={[tfCount]} min={0} max={10} step={1} onValueChange={([v]) => setTfCount(v)} />
+                      <Label className="text-sm font-bold">True / False</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={tfCount} 
+                        onChange={(e) => setTfCount(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <Label className="text-sm font-bold">Fill in Blanks</Label>
-                        <span className="text-xs font-bold text-primary">{blankCount}</span>
-                      </div>
-                      <Slider value={[blankCount]} min={0} max={10} step={1} onValueChange={([v]) => setBlankCount(v)} />
+                      <Label className="text-sm font-bold">Fill in Blanks</Label>
+                      <Input 
+                        type="number" 
+                        min={0} 
+                        value={blankCount} 
+                        onChange={(e) => setBlankCount(parseInt(e.target.value) || 0)} 
+                        className="rounded-xl"
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-primary/5 p-4 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-primary" />
-                      <Label className="font-bold">Session Timer</Label>
+                      <Label className="font-bold">Session Timer (seconds per question)</Label>
                     </div>
-                    <span className="text-sm font-black text-primary">{timerSeconds}s <span className="text-[10px] text-muted-foreground uppercase font-normal">per question</span></span>
                   </div>
-                  <Slider value={[timerSeconds]} min={10} max={300} step={10} onValueChange={([v]) => setTimerSeconds(v)} />
+                  <Input 
+                    type="number" 
+                    min={5} 
+                    value={timerSeconds} 
+                    onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} 
+                    className="rounded-xl"
+                  />
                 </div>
               </div>
             )}
@@ -275,7 +291,7 @@ export default function UploadPage() {
           </CardContent>
           <CardFooter className="justify-center border-t bg-muted/20 p-6 rounded-b-2xl">
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold text-center">
-              AI will generate {mcqCount + shortCount + tfCount + blankCount} custom questions from your material
+              AI will generate your custom questions from the material
             </p>
           </CardFooter>
         </Card>
