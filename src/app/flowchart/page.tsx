@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -25,7 +24,7 @@ export default function FlowchartPage() {
   useEffect(() => {
     if (mermaidCode && mermaidRef.current) {
       mermaid.initialize({
-        startOnLoad: true,
+        startOnLoad: false,
         theme: 'base',
         themeVariables: {
           primaryColor: '#57A1E0',
