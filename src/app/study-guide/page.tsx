@@ -2,9 +2,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, CheckCircle2, Bookmark } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Loader2, FileText, CheckCircle2, Bookmark, Lightbulb, HelpCircle } from "lucide-react";
 import { generateStudyGuide, type GenerateStudyGuideOutput } from "@/ai/flows/generate-study-guide";
 
 export default function StudyGuidePage() {
@@ -62,18 +63,48 @@ export default function StudyGuidePage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2 shadow-lg border-primary/10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" /> Executive Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="prose prose-slate max-w-none">
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {guide.summary}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="md:col-span-2 space-y-6">
+          <Card className="shadow-lg border-primary/10 overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" /> Executive Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="text-lg leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                {guide.summary}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg border-primary/10 overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
+              <CardTitle className="flex items-center gap-2">
+                <HelpCircle className="h-5 w-5 text-primary" /> Important Practice Questions
+              </CardTitle>
+              <CardDescription>Test your mastery with these critical concepts and their explanations.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <Accordion type="single" collapsible className="w-full">
+                {guide.importantQuestions.map((item, i) => (
+                  <AccordionItem key={i} value={`item-${i}`} className="border-b-0 mb-4 bg-muted/30 rounded-xl px-4">
+                    <AccordionTrigger className="hover:no-underline py-4 text-left font-bold text-base">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-6">
+                      <div className="p-4 bg-white rounded-lg border border-primary/10 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase mb-2">
+                          <Lightbulb className="h-3 w-3" /> AI Explanation
+                        </div>
+                        {item.answer}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="space-y-6">
           <Card className="shadow-md bg-muted/30">

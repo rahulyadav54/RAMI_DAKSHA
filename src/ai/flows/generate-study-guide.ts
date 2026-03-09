@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A flow to generate a structured study guide from text content.
+ * @fileOverview A flow to generate a structured study guide from text content including summary, vocabulary, and practice questions.
  */
 
 import { ai } from '@/ai/genkit';
@@ -18,7 +18,11 @@ const GenerateStudyGuideOutputSchema = z.object({
   vocabulary: z.array(z.object({
     word: z.string(),
     definition: z.string()
-  })).describe('Key terms and their definitions found in the text.')
+  })).describe('Key terms and their definitions found in the text.'),
+  importantQuestions: z.array(z.object({
+    question: z.string(),
+    answer: z.string()
+  })).describe('Critical practice questions with detailed answers to help students learn.')
 });
 export type GenerateStudyGuideOutput = z.infer<typeof GenerateStudyGuideOutputSchema>;
 
@@ -27,7 +31,12 @@ const prompt = ai.definePrompt({
   input: { schema: GenerateStudyGuideInputSchema },
   output: { schema: GenerateStudyGuideOutputSchema },
   prompt: `You are a professional study assistant. Create a detailed study guide from the provided text.
-  Include a high-level summary, bulleted key points, and a vocabulary list for difficult terms.
+  
+  Include:
+  1. A high-level, detailed executive summary.
+  2. A bulleted list of critical takeaways (key points).
+  3. A vocabulary list for difficult or important terms.
+  4. A set of 5-8 'Important Questions' with detailed 'Answers' that explain core concepts from the text to help the student master the material.
 
   Content: """{{{content}}}"""
   `,

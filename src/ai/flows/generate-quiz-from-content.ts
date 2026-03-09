@@ -1,7 +1,8 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for generating various types of comprehension questions
- * from provided text content with configurable counts.
+ * from provided text content with configurable counts and difficulty levels.
  */
 
 import {ai} from '@/ai/genkit';
@@ -13,6 +14,7 @@ const GenerateQuizFromContentInputSchema = z.object({
   shortCount: z.number().default(3),
   tfCount: z.number().default(2),
   blankCount: z.number().default(2),
+  difficulty: z.enum(['easy', 'intermediate', 'hard']).default('intermediate'),
 });
 export type GenerateQuizFromContentInput = z.infer<typeof GenerateQuizFromContentInputSchema>;
 
@@ -69,6 +71,8 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateQuizFromContentOutputSchema },
   prompt: `You are an expert educator. Generate a high-quality assessment from the provided text.
   
+  Difficulty Level: {{{difficulty}}}
+  
   Requested Question Counts:
   - Multiple Choice: {{{mcqCount}}}
   - Short Answer: {{{shortCount}}}
@@ -76,6 +80,11 @@ const prompt = ai.definePrompt({
   - Fill in the Blanks: {{{blankCount}}}
 
   Content: """{{{content}}}"""
+
+  Adjust the complexity of the questions based on the difficulty level:
+  - Easy: Focus on basic recall and literal understanding.
+  - Intermediate: Require some inference and application of concepts.
+  - Hard: Demand high-level critical thinking, deep analysis, and synthesis of ideas.
 
   Ensure questions are factually grounded in the text. For fill-in-the-blanks, use "___" for the blank space.
 `,

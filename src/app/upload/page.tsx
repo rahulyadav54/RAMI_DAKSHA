@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -9,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp, BookOpen, Settings2, Clock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp, BookOpen, Settings2, Clock, BarChart } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
@@ -34,6 +36,7 @@ export default function UploadPage() {
   const [tfCount, setTfCount] = useState(2);
   const [blankCount, setBlankCount] = useState(2);
   const [timerSeconds, setTimerSeconds] = useState(60);
+  const [difficulty, setDifficulty] = useState<'easy' | 'intermediate' | 'hard'>('intermediate');
 
   const { user } = useUser();
   const db = useFirestore();
@@ -90,7 +93,8 @@ export default function UploadPage() {
           mcqCount,
           shortCount,
           tfCount,
-          blankCount
+          blankCount,
+          difficulty
         }),
         generateStudyGuide({ content }),
         generateFlashcards({ content })
@@ -111,7 +115,8 @@ export default function UploadPage() {
           mcqCount,
           shortCount,
           tfCount,
-          blankCount
+          blankCount,
+          difficulty
         }
       };
 
@@ -253,20 +258,41 @@ export default function UploadPage() {
                   </div>
                 </div>
 
-                <div className="bg-primary/5 p-4 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <Label className="font-bold">Session Timer (seconds per question)</Label>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="bg-primary/5 p-4 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <Label className="font-bold">Timer (sec/question)</Label>
+                      </div>
                     </div>
+                    <Input 
+                      type="number" 
+                      min={5} 
+                      value={timerSeconds} 
+                      onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} 
+                      className="rounded-xl"
+                    />
                   </div>
-                  <Input 
-                    type="number" 
-                    min={5} 
-                    value={timerSeconds} 
-                    onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} 
-                    className="rounded-xl"
-                  />
+
+                  <div className="bg-primary/5 p-4 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <BarChart className="h-4 w-4 text-primary" />
+                        <Label className="font-bold">Difficulty Level</Label>
+                      </div>
+                    </div>
+                    <Select value={difficulty} onValueChange={(v: any) => setDifficulty(v)}>
+                      <SelectTrigger className="rounded-xl bg-white">
+                        <SelectValue placeholder="Select difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy (Recall)</SelectItem>
+                        <SelectItem value="intermediate">Intermediate (Inference)</SelectItem>
+                        <SelectItem value="hard">Hard (Analysis)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             )}
