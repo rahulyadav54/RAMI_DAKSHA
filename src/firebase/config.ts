@@ -1,4 +1,6 @@
+
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCpo_ymhV4LgYiTQCa2v2y4hiFI0bxoW8A",
@@ -11,5 +13,17 @@ const firebaseConfig = {
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
 
-export { app, firebaseConfig };
+// Enable offline persistence for better user experience in unreliable network conditions
+if (typeof window !== "undefined") {
+  enableIndexedDbPersistence(firestore).catch((err) => {
+    if (err.code == 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code == 'unimplemented') {
+      console.warn('The current browser does not support all of the features required to enable persistence.');
+    }
+  });
+}
+
+export { app, firestore, firebaseConfig };

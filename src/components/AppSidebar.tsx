@@ -1,5 +1,5 @@
 
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -16,7 +16,9 @@ import {
   LogOut,
   ChevronRight,
   Sparkles,
-  Workflow
+  Workflow,
+  BookCheck,
+  Languages
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -34,13 +36,13 @@ import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
-  { href: "/upload", label: "Take a Quiz", icon: PlusCircle, highlight: true },
+  { href: "/upload", label: "New Session", icon: PlusCircle, highlight: true },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/homework", label: "Homework Hub", icon: BookCheck },
+  { href: "/character-chat", label: "Character Chat", icon: Languages },
   { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
   { href: "/flashcards", label: "Flashcards", icon: Layers },
-  { href: "/flowchart", label: "Flowchart", icon: Workflow },
-  { href: "/ai-tutor", label: "AI Tutor", icon: Bot },
-  { href: "/study-guide", label: "Study Guide", icon: FileText },
+  { href: "/flowchart", label: "Process Flow", icon: Workflow },
   { href: "/parent-portal", label: "Parent Portal", icon: Users },
   { href: "/achievements", label: "Achievements", icon: Trophy },
 ];
@@ -53,7 +55,6 @@ export function AppSidebar() {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -63,26 +64,18 @@ export function AppSidebar() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      toast({
-        title: "Signed out",
-        description: "See you again soon!",
-      });
+      toast({ title: "Signed out", description: "See you again soon!" });
       router.push("/");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Error", description: error.message });
     }
   };
 
-  // Only display user-specific data after mounting on the client to avoid hydration mismatch
   const displayName = mounted && user ? (user.displayName || "Scholar") : "Scholar";
   const userUid = mounted && user ? user.uid : "guest";
 
   return (
-    <Sidebar className="border-r border-primary/5 bg-white/50 backdrop-blur-xl">
+    <Sidebar className="border-r border-primary/5 bg-white/70 backdrop-blur-xl">
       <SidebarHeader className="p-8">
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="bg-gradient-to-br from-primary to-accent p-2.5 rounded-2xl text-white shadow-xl shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
@@ -90,7 +83,7 @@ export function AppSidebar() {
           </div>
           <div>
             <span className="text-2xl font-headline font-bold text-foreground tracking-tight block">SmartRead</span>
-            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] -mt-1 block">AI Tutor</span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] -mt-1 block">AI Ecosystem</span>
           </div>
         </Link>
       </SidebarHeader>
@@ -107,7 +100,7 @@ export function AppSidebar() {
                   pathname === item.href 
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                     : "text-muted-foreground hover:bg-primary/5 hover:text-primary",
-                  item.highlight && pathname !== item.href && "border-2 border-primary/20 bg-primary/5 text-primary"
+                  item.highlight && pathname !== item.href && "border-2 border-primary/10 bg-primary/5 text-primary"
                 )}
               >
                 <Link href={item.href} className="flex items-center w-full">
@@ -115,12 +108,9 @@ export function AppSidebar() {
                     "h-5 w-5 mr-3 transition-transform group-hover:scale-110",
                     pathname === item.href ? "text-primary-foreground" : "text-current"
                   )} />
-                  <span className="flex-1 font-medium">{item.label}</span>
+                  <span className="flex-1 font-bold text-xs uppercase tracking-wide">{item.label}</span>
                   {item.highlight && pathname !== item.href && (
                     <Sparkles className="h-4 w-4 ml-2 animate-pulse" />
-                  )}
-                  {pathname === item.href && (
-                    <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
                   )}
                 </Link>
               </SidebarMenuButton>
@@ -135,7 +125,7 @@ export function AppSidebar() {
           className="w-full flex items-center gap-4 p-3 rounded-2xl hover:bg-destructive/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-destructive/10 text-left"
         >
           <Avatar className="h-11 w-11 border-2 border-white shadow-sm transition-transform group-hover:scale-105">
-            <AvatarImage src={mounted ? `https://picsum.photos/seed/${userUid}/100/100` : undefined} />
+            <AvatarImage src={`https://picsum.photos/seed/${userUid}/100/100`} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {displayName.substring(0, 2).toUpperCase()}
             </AvatarFallback>

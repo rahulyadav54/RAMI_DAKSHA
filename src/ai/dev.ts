@@ -9,3 +9,5 @@ import '@/ai/flows/generate-flashcards.ts';
 import '@/ai/flows/generate-study-guide.ts';
 import '@/ai/flows/ai-tutor-chat.ts';
 import '@/ai/flows/generate-flowchart.ts';
+import '@/ai/flows/character-chat.ts';
+import '@/ai/flows/generate-homework.ts';
