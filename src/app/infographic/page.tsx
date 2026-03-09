@@ -7,33 +7,36 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ImageIcon, Download, Sparkles, RefreshCw, ZoomIn } from "lucide-react";
 import { generateInfographic } from "@/ai/flows/generate-infographic-flow";
 import { useToast } from "@/hooks/use-toast";
-import Image from "next/image";
 
 export default function InfographicPage() {
   const [infographic, setInfographic] = useState<{ imageUrl: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchInfographic = async () => {
     const content = sessionStorage.getItem("quiz_content");
     if (!content) {
-      setIsLoading(false);
+      toast({ variant: "destructive", title: "No Content", description: "Please upload or paste text first." });
       return;
     }
     setIsLoading(true);
     try {
       const result = await generateInfographic({ content });
       setInfographic(result);
+      toast({ title: "Visual Generated", description: "Concepts mapped successfully." });
     } catch (err) {
       console.error(err);
-      toast({ variant: "destructive", title: "Image Generation Failed", description: "Imagen is resting. Please try again soon." });
+      toast({ variant: "destructive", title: "Image Generation Failed", description: "Imagen is currently at capacity. Please try again." });
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchInfographic();
+    const content = sessionStorage.getItem("quiz_content");
+    if (content && !infographic) {
+      fetchInfographic();
+    }
   }, []);
 
   if (isLoading) {
@@ -41,18 +44,20 @@ export default function InfographicPage() {
       <div className="flex flex-col items-center justify-center h-full min-h-[70vh] space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="text-xl font-headline font-bold">Designing Infographic...</p>
-        <p className="text-muted-foreground">Translating text into visual concepts.</p>
+        <p className="text-muted-foreground">Translating text into visual concepts. This may take 15-30 seconds.</p>
       </div>
     );
   }
 
   if (!infographic) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 min-h-[70vh]">
         <ImageIcon className="h-16 w-16 text-muted-foreground opacity-20" />
         <h2 className="text-2xl font-bold">No Visual Found</h2>
-        <p className="text-muted-foreground">Upload content first to generate a visual infographic.</p>
-        <Button onClick={fetchInfographic}>Generate Now</Button>
+        <p className="text-muted-foreground max-w-md">Transform your text into a visual infographic map designed for rapid conceptual learning.</p>
+        <Button onClick={fetchInfographic} size="lg" className="rounded-full px-8 gap-2">
+           <Sparkles className="h-4 w-4" /> Generate Infographic
+        </Button>
       </div>
     );
   }
@@ -68,8 +73,10 @@ export default function InfographicPage() {
           <Button variant="outline" className="rounded-full h-12" onClick={fetchInfographic}>
             <RefreshCw className="h-4 w-4 mr-2" /> Redraw
           </Button>
-          <Button className="rounded-full h-12 gap-2" onClick={() => window.open(infographic.imageUrl)}>
-            <Download className="h-4 w-4" /> Save Image
+          <Button className="rounded-full h-12 gap-2" asChild>
+            <a href={infographic.imageUrl} download="infographic.png">
+              <Download className="h-4 w-4" /> Save Image
+            </a>
           </Button>
         </div>
       </div>
@@ -82,7 +89,7 @@ export default function InfographicPage() {
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-             <Button variant="secondary" className="rounded-full font-bold gap-2">
+             <Button variant="secondary" className="rounded-full font-bold gap-2" onClick={() => window.open(infographic.imageUrl, '_blank')}>
                <ZoomIn className="h-5 w-5" /> View Fullscreen
              </Button>
           </div>
@@ -98,7 +105,7 @@ export default function InfographicPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
          <Card className="border-none shadow-lg bg-primary/5 rounded-[2rem] p-8">
-            <CardHeader className="p-0 mb-4">
+            <CardHeader className="p-0 mb-4 text-left">
                <CardTitle className="text-lg font-headline">Visual Learning</CardTitle>
             </CardHeader>
             <p className="text-sm leading-relaxed text-slate-600">
@@ -106,7 +113,7 @@ export default function InfographicPage() {
             </p>
          </Card>
          <Card className="border-none shadow-lg bg-accent/5 rounded-[2rem] p-8">
-            <CardHeader className="p-0 mb-4">
+            <CardHeader className="p-0 mb-4 text-left">
                <CardTitle className="text-lg font-headline">Usage Context</CardTitle>
             </CardHeader>
             <p className="text-sm leading-relaxed text-slate-600">

@@ -10,29 +10,34 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function VideoSummaryPage() {
   const [video, setVideo] = useState<{ videoDataUri: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchVideo = async () => {
     const content = sessionStorage.getItem("quiz_content");
     if (!content) {
-      setIsLoading(false);
+      toast({ variant: "destructive", title: "Missing Content", description: "Please upload or paste some text first." });
       return;
     }
+    
     setIsLoading(true);
     try {
       const result = await generateVideoSummary({ content });
       setVideo(result);
+      toast({ title: "Video Ready!", description: "Your cinematic summary has been produced." });
     } catch (err) {
       console.error(err);
-      toast({ variant: "destructive", title: "Video Generation Error", description: "Veo models are currently at capacity. Please try again in a few minutes." });
+      toast({ variant: "destructive", title: "Video Generation Error", description: "Veo models are currently at capacity or the content was too long. Please try again." });
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchVideo();
+    const content = sessionStorage.getItem("quiz_content");
+    if (content && !video) {
+      fetchVideo();
+    }
   }, []);
 
   if (isLoading) {
@@ -41,7 +46,7 @@ export default function VideoSummaryPage() {
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
         <div className="text-center space-y-2">
           <h2 className="text-2xl font-headline font-bold">Producing Your Video Summary...</h2>
-          <p className="text-muted-foreground max-w-sm">This can take up to 60 seconds. Our Veo AI is visualizing your content.</p>
+          <p className="text-muted-foreground max-w-sm">This can take up to 60 seconds. Our Veo AI is visualizing your content into a cinematic experience.</p>
         </div>
       </div>
     );
@@ -49,12 +54,12 @@ export default function VideoSummaryPage() {
 
   if (!video) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
-        <AlertCircle className="h-16 w-16 text-destructive opacity-20" />
-        <h2 className="text-2xl font-bold">Generation Unsuccessful</h2>
-        <p className="text-muted-foreground">We couldn't generate the video summary at this time.</p>
-        <Button onClick={fetchVideo} className="rounded-full gap-2">
-           <RefreshCw className="h-4 w-4" /> Try Again
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 min-h-[70vh]">
+        <Video className="h-16 w-16 text-muted-foreground opacity-20" />
+        <h2 className="text-2xl font-bold">No Video Overview Yet</h2>
+        <p className="text-muted-foreground max-w-md">Click generate to create a high-fidelity cinematic video overview of your study material using Veo 3.</p>
+        <Button onClick={fetchVideo} size="lg" className="rounded-full px-8 gap-2">
+           <Sparkles className="h-4 w-4" /> Generate Video Summary
         </Button>
       </div>
     );
@@ -84,8 +89,10 @@ export default function VideoSummaryPage() {
       </Card>
 
       <div className="flex justify-center gap-4">
-        <Button size="lg" className="rounded-2xl h-14 px-10 font-bold gap-2 shadow-xl shadow-primary/20" onClick={() => window.open(video.videoDataUri)}>
-          <Download className="h-5 w-5" /> Download MP4
+        <Button size="lg" className="rounded-2xl h-14 px-10 font-bold gap-2 shadow-xl shadow-primary/20" asChild>
+          <a href={video.videoDataUri} download="summary.mp4">
+            <Download className="h-5 w-5" /> Download MP4
+          </a>
         </Button>
         <Button variant="outline" size="lg" className="rounded-2xl h-14 px-10 font-bold gap-2" onClick={fetchVideo}>
           <RefreshCw className="h-5 w-5" /> Regenerate
