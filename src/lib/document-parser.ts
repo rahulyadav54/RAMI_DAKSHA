@@ -6,9 +6,9 @@ import mammoth from 'mammoth';
 
 /**
  * PDF.js Worker initialization. 
- * Using a CDN version that matches the package version for reliability in the browser.
+ * Using a CDN version that matches the package version exactly.
  */
-const PDFJS_VERSION = '4.0.379';
+const PDFJS_VERSION = '4.10.38';
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
 
 /**
@@ -41,7 +41,6 @@ async function parseTxt(file: File): Promise<string> {
 async function parsePdf(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    // Use Uint8Array which is the standard input for getDocument
     const typedArray = new Uint8Array(arrayBuffer);
     const loadingTask = pdfjs.getDocument({ 
       data: typedArray,
