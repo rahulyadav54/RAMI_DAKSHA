@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +25,16 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 208 69% 61%;
     --radius: 1rem;
+    
+    /* Sidebar specific variables for shadcn/ui */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 208 69% 61%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 208 69% 61%;
   }
   .dark {
     --background: 222 47% 11%;
@@ -82,6 +93,15 @@
   }
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+  
+  /* Prevent horizontal scroll issues */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
