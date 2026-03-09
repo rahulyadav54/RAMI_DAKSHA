@@ -1,22 +1,31 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { doc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useAuth, useFirestore, useUser } from "@/firebase";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Loader2, Upload, FileText, AlertCircle, Sparkles } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
+import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
+import { generateFlashcards } from "@/ai/flows/generate-flashcards";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UploadPage() {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
+  const db = useFirestore();
+  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (!content.trim()) {
@@ -24,26 +33,49 @@ export default function UploadPage() {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "You must be logged in to save your learning sessions."
+      });
+      router.push("/login");
+      return;
+    }
+
     setIsProcessing(true);
     setError(null);
 
     try {
-      // Analyze content first
-      const readingLevel = await detectReadingLevel({ text: content });
+      // Parallel GenAI processing for efficiency
+      const [readingLevel, quizData, studyGuide, flashcards] = await Promise.all([
+        detectReadingLevel({ text: content }),
+        generateQuizFromContent({ content }),
+        generateStudyGuide({ content }),
+        generateFlashcards({ content })
+      ]);
       
-      // Generate quiz
-      const quizData = await generateQuizFromContent({ content });
-      
-      // In a real app, we'd save this to a database. 
-      // For this demo, we'll store in sessionStorage and navigate.
+      if (!db) return;
+
+      // Save to Firestore
+      const sessionsRef = collection(db, "users", user.uid, "sessions");
+      const docRef = await addDoc(sessionsRef, {
+        content,
+        createdAt: serverTimestamp(),
+        readingLevel,
+        quiz: quizData,
+        studyGuide,
+        flashcards: flashcards.cards
+      });
+
+      // Maintain session storage for current workflow
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("quiz_content", content);
+      sessionStorage.setItem("current_session_id", docRef.id);
       
       router.push("/quiz/preview");
-    } catch (err) {
-      setError("Failed to generate quiz. Please try again with different content.");
-      console.error(err);
+    } catch (err: any) {
+      setError("Failed to generate content: " + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -51,18 +83,20 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navigation />
       <main className="container mx-auto p-4 md:p-8 flex-1 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl shadow-xl border-t-4 border-t-primary">
-          <CardHeader>
-            <CardTitle className="text-2xl font-headline flex items-center gap-2">
-              <Upload className="h-6 w-6 text-primary" /> Create New Assessment
-            </CardTitle>
-            <CardDescription>
-              Paste an article, text passage, or textbook chapter below. Our AI will analyze the reading level and generate a comprehensive quiz.
+        <Card className="w-full max-w-2xl shadow-2xl border-primary/20 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="bg-primary/10 p-4 rounded-full">
+                <Upload className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-3xl font-headline font-bold">New Reading Session</CardTitle>
+            <CardDescription className="text-lg mt-2">
+              Transform any text into a masterclass.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -71,79 +105,57 @@ export default function UploadPage() {
               </Alert>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="content">Content Body</Label>
+            <div className="space-y-4">
+              <Label htmlFor="content" className="text-lg font-semibold">What are we studying today?</Label>
               <Textarea
                 id="content"
-                placeholder="Paste your text here (min 100 words recommended)..."
-                className="min-h-[300px] resize-none focus:ring-primary"
+                placeholder="Paste an article, chapter, or essay here..."
+                className="min-h-[350px] resize-none text-base p-6 rounded-2xl border-primary/10 focus:ring-primary shadow-inner bg-white/50"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 disabled={isProcessing}
               />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{content.length} characters</span>
-                <span>Supports plain text</span>
+              <div className="flex justify-between items-center px-2">
+                <span className="text-xs text-muted-foreground font-mono">{content.length} chars</span>
+                <span className="text-xs text-primary/60 flex items-center gap-1">
+                   <Sparkles className="h-3 w-3" /> GenAI Optimized
+                </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="flex items-center gap-2 h-16" disabled={isProcessing}>
-                <FileText className="h-5 w-5" />
-                <div className="text-left">
-                  <div className="text-sm font-bold">Upload PDF</div>
-                  <div className="text-[10px]">Extract text automatically</div>
-                </div>
-              </Button>
-              <Button 
-                variant="default" 
-                className="flex items-center gap-2 h-16" 
-                onClick={handleGenerate}
-                disabled={isProcessing || !content.trim()}
-              >
-                {isProcessing ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <BrainCircuit className="h-5 w-5" />
-                )}
-                <div className="text-left">
-                  <div className="text-sm font-bold">Generate Quiz</div>
-                  <div className="text-[10px]">AI-powered comprehension</div>
-                </div>
-              </Button>
-            </div>
+            <Button 
+              className="w-full h-16 text-xl rounded-2xl shadow-lg hover:shadow-primary/20 transition-all gap-3" 
+              onClick={handleGenerate}
+              disabled={isProcessing || !content.trim()}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  Generating Intelligence...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-6 w-6" />
+                  Generate Smart Study Kit
+                </>
+              )}
+            </Button>
           </CardContent>
-          <CardFooter className="bg-muted/50 text-[11px] text-muted-foreground p-4 flex justify-between">
-            <p>Maximum content length: 10,000 characters</p>
-            <p>AI Tutor is ready</p>
+          <CardFooter className="justify-center border-t bg-muted/20 p-6 rounded-b-2xl">
+            <div className="flex gap-8 text-xs text-muted-foreground uppercase tracking-widest font-bold">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" /> PDF Support
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" /> AI Quiz
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" /> Flashcards
+              </div>
+            </div>
           </CardFooter>
         </Card>
       </main>
     </div>
-  );
-}
-
-function BrainCircuit({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <path d="M12 5V3a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2Z" />
-      <path d="M9 13a3 3 0 0 1 3-3h1" />
-      <path d="M15 20h-3a3 3 0 0 1-3-3v-1" />
-      <path d="M3 13v-1a2 2 0 0 1 2-2h1" />
-      <path d="M18 10h1a2 2 0 0 1 2 2v1" />
-      <path d="M12 17v2a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-2" />
-      <circle cx="12" cy="13" r="3" />
-    </svg>
   );
 }

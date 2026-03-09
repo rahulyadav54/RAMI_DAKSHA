@@ -8,6 +8,7 @@
       "properties": {
         "uid": { "type": "string" },
         "displayName": { "type": "string" },
+        "email": { "type": "string" },
         "role": { "type": "string", "enum": ["student", "teacher", "parent"] },
         "gradeLevel": { "type": "number" },
         "totalPoints": { "type": "number" },
@@ -15,35 +16,29 @@
       },
       "required": ["uid", "role"]
     },
-    "FlashcardSet": {
-      "title": "Flashcard Set",
-      "description": "A collection of flashcards for a specific topic.",
+    "ReadingSession": {
+      "title": "Reading Session",
+      "description": "A unit of uploaded content and its AI analysis.",
       "type": "object",
       "properties": {
-        "contentId": { "type": "string" },
-        "title": { "type": "string" },
-        "cards": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "front": { "type": "string" },
-              "back": { "type": "string" }
-            }
-          }
-        }
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "readingLevel": { "type": "object" },
+        "quiz": { "type": "object" },
+        "studyGuide": { "type": "object" },
+        "flashcards": { "type": "array" }
       }
     },
-    "StudyGuide": {
-      "title": "Study Guide",
-      "description": "AI-generated summary and key takeaways.",
+    "QuizAttempt": {
+      "title": "Quiz Attempt",
+      "description": "Result of a student taking a quiz.",
       "type": "object",
       "properties": {
-        "contentId": { "type": "string" },
-        "title": { "type": "string" },
-        "summary": { "type": "string" },
-        "keyPoints": { "type": "array", "items": { "type": "string" } },
-        "vocabulary": { "type": "array", "items": { "type": "object", "properties": { "word": { "type": "string" }, "definition": { "type": "string" } } } }
+        "sessionId": { "type": "string" },
+        "type": { "type": "string", "enum": ["standard", "speed"] },
+        "score": { "type": "number" },
+        "evaluations": { "type": "array" },
+        "completedAt": { "type": "string", "format": "date-time" }
       }
     },
     "Achievement": {
@@ -64,19 +59,19 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "User profiles and settings."
+      "description": "User profiles."
     },
-    "/users/{userId}/flashcards": {
-      "schema": { "$ref": "#/backend/entities/FlashcardSet" },
-      "description": "Flashcards saved by the user."
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": { "$ref": "#/backend/entities/ReadingSession" },
+      "description": "History of uploaded materials and AI tools."
     },
-    "/users/{userId}/studyGuides": {
-      "schema": { "$ref": "#/backend/entities/StudyGuide" },
-      "description": "Study guides generated for the user."
+    "/users/{userId}/attempts/{attemptId}": {
+      "schema": { "$ref": "#/backend/entities/QuizAttempt" },
+      "description": "Student quiz results."
     },
-    "/users/{userId}/achievements": {
+    "/users/{userId}/achievements/{achievementId}": {
       "schema": { "$ref": "#/backend/entities/Achievement" },
-      "description": "Badges earned by the student."
+      "description": "Badges earned."
     }
   }
 }
