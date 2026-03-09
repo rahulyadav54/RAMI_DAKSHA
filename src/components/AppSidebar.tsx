@@ -13,13 +13,15 @@ import {
   Users, 
   Trophy, 
   LogOut,
-  ChevronRight,
   Sparkles,
   Workflow,
   BookCheck,
   Languages,
   School,
-  UserCheck
+  UserCheck,
+  PenTool,
+  Brain,
+  Headphones
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -29,7 +31,10 @@ import {
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser, useAuth, useFirestore } from "@/firebase";
@@ -96,11 +101,14 @@ export function AppSidebar() {
       ...common,
       { href: "/homework", label: "Homework Hub", icon: BookCheck },
       { href: "/character-chat", label: "Character Chat", icon: Languages },
-      { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
-      { href: "/flashcards", label: "Flashcards", icon: Layers },
-      { href: "/flowchart", label: "Process Flow", icon: Workflow },
     ];
   };
+
+  const practiceItems = [
+    { href: "/practice/handwriting", label: "Handwriting", icon: PenTool },
+    { href: "/practice/math", label: "Math Tutor", icon: Brain },
+    { href: "/practice/spelling", label: "Spelling Lab", icon: Headphones },
+  ];
 
   const navItems = getNavItems();
   const displayName = profile?.displayName || "Scholar";
@@ -142,6 +150,35 @@ export function AppSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+
+        {role === 'student' && (
+          <SidebarGroup className="mt-8">
+            <SidebarGroupLabel className="px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 mb-2">Foundation Skills</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {practiceItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={pathname === item.href}
+                      className={cn(
+                        "h-10 px-4 rounded-xl transition-all duration-300",
+                        pathname === item.href 
+                          ? "bg-accent text-accent-foreground shadow-md" 
+                          : "text-muted-foreground hover:bg-accent/5 hover:text-accent"
+                      )}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-4 w-4 mr-3" />
+                        <span className="font-bold text-[11px] uppercase tracking-wide">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-6 border-t border-primary/5">

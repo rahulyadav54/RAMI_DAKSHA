@@ -37,31 +37,28 @@
         "visualUrl": { "type": "string" }
       }
     },
-    "QuizAttempt": {
-      "title": "Quiz Attempt",
-      "description": "Result of a student taking a quiz.",
+    "SkillPractice": {
+      "title": "Skill Practice",
+      "description": "Record of a foundational skill practice session.",
       "type": "object",
       "properties": {
-        "sessionId": { "type": "string" },
         "studentId": { "type": "string" },
-        "type": { "type": "string", "enum": ["standard", "speed", "adaptive"] },
+        "skillType": { "type": "string", "enum": ["handwriting", "math", "spelling"] },
+        "content": { "type": "string" },
         "score": { "type": "number" },
-        "evaluations": { "type": "array" },
-        "skillGaps": { "type": "array" },
-        "completedAt": { "type": "string", "format": "date-time" }
+        "feedback": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       }
     },
-    "Assessment": {
-      "title": "Assessment",
-      "description": "A teacher-created assessment assigned to students.",
+    "CharacterInteraction": {
+      "title": "Character Interaction",
+      "description": "A log of a conversation between a student and an AI character.",
       "type": "object",
       "properties": {
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "content": { "type": "string" },
-        "createdBy": { "type": "string" },
-        "assignedTo": { "type": "array", "items": { "type": "string" } },
-        "dueDate": { "type": "string", "format": "date-time" },
+        "studentId": { "type": "string" },
+        "characterName": { "type": "string" },
+        "messages": { "type": "array" },
+        "comprehensionScore": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
     }
@@ -78,13 +75,13 @@
       "schema": { "$ref": "#/backend/entities/ReadingSession" },
       "description": "History of uploaded materials."
     },
-    "/users/{userId}/attempts/{attemptId}": {
-      "schema": { "$ref": "#/backend/entities/QuizAttempt" },
-      "description": "Student quiz results."
+    "/users/{userId}/practice/{practiceId}": {
+      "schema": { "$ref": "#/backend/entities/SkillPractice" },
+      "description": "Foundation skill practice records."
     },
-    "/assessments/{assessmentId}": {
-      "schema": { "$ref": "#/backend/entities/Assessment" },
-      "description": "Global assessment bank created by teachers."
+    "/users/{userId}/interactions/{interactionId}": {
+      "schema": { "$ref": "#/backend/entities/CharacterInteraction" },
+      "description": "History of AI character conversations."
     }
   }
 }
