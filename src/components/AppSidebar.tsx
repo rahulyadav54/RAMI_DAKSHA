@@ -21,7 +21,8 @@ import {
   UserCheck,
   PenTool,
   Brain,
-  Headphones
+  Headphones,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -78,7 +79,6 @@ export function AppSidebar() {
   const getNavItems = () => {
     const common = [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/achievements", label: "Achievements", icon: Trophy },
     ];
 
     if (role === "teacher") {
@@ -86,6 +86,7 @@ export function AppSidebar() {
         ...common,
         { href: "/upload", label: "Teacher Tools", icon: School },
         { href: "/teacher/classroom", label: "My Class", icon: UserCheck },
+        { href: "/achievements", label: "Achievements", icon: Trophy },
       ];
     }
 
@@ -93,12 +94,20 @@ export function AppSidebar() {
       return [
         ...common,
         { href: "/parent-portal", label: "Parent Portal", icon: Users },
+        { href: "/achievements", label: "Achievements", icon: Trophy },
       ];
     }
 
+    // Student Role - matches the user's reference image
     return [
-      { href: "/upload", label: "New Session", icon: PlusCircle, highlight: true },
       ...common,
+      { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
+      { href: "/flashcards", label: "Flashcards", icon: Layers },
+      { href: "/ai-tutor", label: "AI Tutor", icon: Bot },
+      { href: "/study-guide", label: "Study Guide", icon: FileText },
+      { href: "/parent-portal", label: "Parent Portal", icon: Users },
+      { href: "/achievements", label: "Achievements", icon: Trophy },
+      { href: "/upload", label: "New Session", icon: PlusCircle, highlight: true },
       { href: "/homework", label: "Homework Hub", icon: BookCheck },
       { href: "/character-chat", label: "Character Chat", icon: Languages },
     ];
