@@ -15,7 +15,8 @@ import {
   Trophy, 
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Workflow
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
   { href: "/flashcards", label: "Flashcards", icon: Layers },
+  { href: "/flowchart", label: "Flowchart", icon: Workflow },
   { href: "/ai-tutor", label: "AI Tutor", icon: Bot },
   { href: "/study-guide", label: "Study Guide", icon: FileText },
   { href: "/parent-portal", label: "Parent Portal", icon: Users },

@@ -8,3 +8,4 @@ import '@/ai/flows/detect-reading-level.ts';
 import '@/ai/flows/generate-flashcards.ts';
 import '@/ai/flows/generate-study-guide.ts';
 import '@/ai/flows/ai-tutor-chat.ts';
+import '@/ai/flows/generate-flowchart.ts';

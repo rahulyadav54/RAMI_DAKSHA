@@ -5,18 +5,19 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useFirestore, useUser } from "@/firebase";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, BookOpen, AlertCircle, Sparkles, FileUp, Settings2, Clock, BarChart } from "lucide-react";
+import { Loader2, AlertCircle, Sparkles, FileUp, Settings2, Clock, BarChart } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
 import { generateFlashcards } from "@/ai/flows/generate-flashcards";
+import { generateFlowchart } from "@/ai/flows/generate-flowchart";
 import { parseDocument } from "@/lib/document-parser";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -86,7 +87,7 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      const [readingLevel, quizData, studyGuide, flashcards] = await Promise.all([
+      const [readingLevel, quizData, studyGuide, flashcards, flowchart] = await Promise.all([
         detectReadingLevel({ text: content }),
         generateQuizFromContent({ 
           content,
@@ -97,7 +98,8 @@ export default function UploadPage() {
           difficulty
         }),
         generateStudyGuide({ content }),
-        generateFlashcards({ content })
+        generateFlashcards({ content }),
+        generateFlowchart({ content })
       ]);
       
       if (!db) return;
@@ -110,6 +112,7 @@ export default function UploadPage() {
         quiz: quizData,
         studyGuide,
         flashcards: flashcards.cards,
+        flowchart: flowchart.mermaidCode,
         config: {
           timerSeconds,
           mcqCount,
@@ -132,6 +135,7 @@ export default function UploadPage() {
 
       sessionStorage.setItem("last_quiz_data", JSON.stringify(quizData));
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
+      sessionStorage.setItem("last_flowchart", flowchart.mermaidCode);
       sessionStorage.setItem("quiz_content", content);
       sessionStorage.setItem("quiz_timer", timerSeconds.toString());
       sessionStorage.setItem("current_session_id", "new-temp-session"); 

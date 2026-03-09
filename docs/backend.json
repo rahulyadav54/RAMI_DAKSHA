@@ -26,7 +26,8 @@
         "readingLevel": { "type": "object" },
         "quiz": { "type": "object" },
         "studyGuide": { "type": "object" },
-        "flashcards": { "type": "array" }
+        "flashcards": { "type": "array" },
+        "flowchart": { "type": "string" }
       }
     },
     "QuizAttempt": {
