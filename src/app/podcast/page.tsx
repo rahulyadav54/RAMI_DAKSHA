@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Headphones, Play, Download, Volume2, Sparkles, MessageSquare, RefreshCw } from "lucide-react";
 import { generatePodcast } from "@/ai/flows/generate-podcast-flow";
 import { useToast } from "@/hooks/use-toast";
+
+export const maxDuration = 60;
 
 export default function PodcastPage() {
   const [podcast, setPodcast] = useState<{ audioDataUri: string; transcript: string } | null>(null);
@@ -25,12 +26,12 @@ export default function PodcastPage() {
       const result = await generatePodcast({ content });
       setPodcast(result);
       toast({ title: "Podcast Ready!", description: "Host1 and Host2 have summarized your material." });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       toast({ 
         variant: "destructive", 
         title: "Podcast Generation Failed", 
-        description: "The audio engine is currently at capacity or timed out. Please try again." 
+        description: err.message || "The audio engine is busy. Please try again." 
       });
     } finally {
       setIsLoading(false);
@@ -38,11 +39,17 @@ export default function PodcastPage() {
   };
 
   useEffect(() => {
-    const content = sessionStorage.getItem("quiz_content");
-    if (content && !podcast) {
-      fetchPodcast();
+    const code = sessionStorage.getItem("last_podcast_data");
+    if (code) {
+      setPodcast(JSON.parse(code));
     }
   }, []);
+
+  useEffect(() => {
+    if (podcast) {
+      sessionStorage.setItem("last_podcast_data", JSON.stringify(podcast));
+    }
+  }, [podcast]);
 
   if (isLoading) {
     return (
@@ -59,7 +66,7 @@ export default function PodcastPage() {
       <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 min-h-[70vh]">
         <Headphones className="h-16 w-16 text-muted-foreground opacity-20" />
         <h2 className="text-2xl font-bold">No Podcast Generated</h2>
-        <p className="text-muted-foreground max-w-md">Click the button below to transform your uploaded content into an AI-powered conversational podcast.</p>
+        <p className="text-muted-foreground max-w-md">Click generate to transform your uploaded content into an AI-powered conversational podcast.</p>
         <Button onClick={fetchPodcast} size="lg" className="rounded-full px-8 gap-2">
            <Sparkles className="h-4 w-4" /> Generate Audio Overview
         </Button>

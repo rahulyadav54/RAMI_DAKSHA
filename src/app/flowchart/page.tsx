@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function FlowchartPage() {
   const [mermaidCode, setMermaidCode] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [renderError, setRenderError] = useState(false);
   const mermaidRef = useRef<HTMLDivElement>(null);
@@ -43,7 +42,7 @@ export default function FlowchartPage() {
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: "The AI was unable to structure the logic. Try a shorter text.",
+        description: "The AI was unable to structure the logic. Try again with simpler text.",
       });
     } finally {
       setIsGenerating(false);
@@ -71,21 +70,13 @@ export default function FlowchartPage() {
           tertiaryColor: '#f3f4f6',
         },
         securityLevel: 'loose',
-        flowchart: {
-          useMaxWidth: true,
-          htmlLabels: true,
-          curve: 'basis'
-        }
       });
 
       const renderDiagram = async () => {
         try {
-          // Clear previous content
           if (mermaidRef.current) {
             mermaidRef.current.innerHTML = '';
-          }
-          const { svg } = await mermaid.render('mermaid-svg-' + Date.now(), mermaidCode);
-          if (mermaidRef.current) {
+            const { svg } = await mermaid.render('mermaid-svg-' + Math.random().toString(36).substr(2, 9), mermaidCode);
             mermaidRef.current.innerHTML = svg;
           }
           setRenderError(false);
@@ -118,7 +109,7 @@ export default function FlowchartPage() {
         <h2 className="text-3xl font-headline font-bold">No Process Map Found</h2>
         <p className="text-muted-foreground max-w-md">Transform your text into a logical flowchart to better understand processes and hierarchies.</p>
         <Button onClick={fetchFlowchart} size="lg" className="rounded-full px-10 h-14 gap-2 shadow-xl shadow-primary/20">
-           <Sparkles className="h-5 w-5" /> Generate Mind Map
+           <Sparkles className="h-5 w-5" /> Generate Process Map
         </Button>
       </div>
     );
@@ -136,7 +127,7 @@ export default function FlowchartPage() {
             <RefreshCw className="h-4 w-4 mr-2" /> Regenerate
           </Button>
           <Button className="rounded-full h-12 shadow-lg shadow-primary/10">
-            <Download className="h-4 w-4 mr-2" /> Export SVG
+            <Download className="h-4 w-4 mr-2" /> Export Map
           </Button>
         </div>
       </div>
@@ -148,11 +139,7 @@ export default function FlowchartPage() {
               <Workflow className="h-5 w-5 text-primary" /> Conceptual Structure
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="rounded-full bg-white font-bold px-3">Mermaid JS</Badge>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><ZoomIn className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full"><ZoomOut className="h-4 w-4" /></Button>
-              </div>
+              <Badge variant="outline" className="rounded-full bg-white font-bold px-3">Visual Intelligence</Badge>
             </div>
           </div>
         </CardHeader>
@@ -163,12 +150,12 @@ export default function FlowchartPage() {
                 <AlertCircle className="h-12 w-12" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold">Complex Logic Detected</h3>
+                <h3 className="text-2xl font-bold">Complex Structure Detected</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                  The AI generated a structure that is too complex for the current renderer. Try regenerating or using a smaller text segment.
+                  The AI generated a structure that is too complex to render. Try regenerating with a shorter text segment.
                 </p>
               </div>
-              <Button onClick={fetchFlowchart} variant="outline" className="rounded-full">Try Regenerating</Button>
+              <Button onClick={fetchFlowchart} variant="outline" className="rounded-full">Try Again</Button>
             </div>
           ) : (
             <div ref={mermaidRef} className="flex justify-center min-h-[500px] w-full transition-all duration-1000" />
@@ -176,7 +163,7 @@ export default function FlowchartPage() {
         </CardContent>
         <CardFooter className="bg-muted/10 p-6 flex justify-center">
            <p className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Sparkles className="h-4 w-4" /> Visual Intelligence Engine
+              <Sparkles className="h-4 w-4" /> AI-Synthesized Mind Map
            </p>
         </CardFooter>
       </Card>
@@ -187,7 +174,7 @@ export default function FlowchartPage() {
             <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Why Visual Maps?</CardTitle>
           </CardHeader>
           <p className="text-sm leading-relaxed text-slate-600">
-            Flowcharts help bypass "Linear Processing" fatigue. By seeing how concepts connect spatially, your brain can map hierarchical relationships and sequences 60,000x faster than reading plain text.
+            Visual maps help bypass "Linear Processing" fatigue. By seeing how concepts connect spatially, your brain can map relationships 60,000x faster than reading plain text.
           </p>
         </Card>
         <Card className="border-none shadow-lg bg-primary/5 rounded-[2rem] p-8">
@@ -195,7 +182,7 @@ export default function FlowchartPage() {
             <CardTitle className="text-sm font-bold uppercase tracking-widest text-primary">Usage Tip</CardTitle>
           </CardHeader>
           <p className="text-sm leading-relaxed text-slate-600">
-            Use this map as a "Mental Skeleton" before diving into your detailed study guide. If a connection looks wrong, regenerate to see a different structural interpretation.
+            Use this map as a "Mental Skeleton" before diving into your detailed study guide. It provides the high-level map of the knowledge terrain.
           </p>
         </Card>
       </div>

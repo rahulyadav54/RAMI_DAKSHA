@@ -1,57 +1,72 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Presentation, ChevronLeft, ChevronRight, Sparkles, Download, ImageIcon } from "lucide-react";
+import { Loader2, Presentation, ChevronLeft, ChevronRight, Sparkles, Download, ImageIcon, RefreshCw } from "lucide-react";
 import { generateSlides } from "@/ai/flows/generate-slides-flow";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+export const maxDuration = 60;
+
 export default function SlidesPage() {
   const [slides, setSlides] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const fetchSlides = async () => {
+    const content = sessionStorage.getItem("quiz_content");
+    if (!content) {
+      toast({ variant: "destructive", title: "No Content", description: "Please upload text first." });
+      return;
+    }
+    setIsLoading(true);
+    setSlides([]);
+    try {
+      const result = await generateSlides({ content });
+      setSlides(result.slides);
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Slide Generation Failed", description: "Our AI designer is busy. Try again later." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSlides = async () => {
-      const content = sessionStorage.getItem("quiz_content");
-      if (!content) {
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const result = await generateSlides({ content });
-        setSlides(result.slides);
-      } catch (err) {
-        console.error(err);
-        toast({ variant: "destructive", title: "Slide Generation Failed", description: "Our AI designer is away. Try again later." });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchSlides();
-  }, [toast]);
+    const code = sessionStorage.getItem("last_slides_data");
+    if (code) {
+      setSlides(JSON.parse(code));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (slides.length > 0) {
+      sessionStorage.setItem("last_slides_data", JSON.stringify(slides));
+    }
+  }, [slides]);
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[70vh] space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="text-xl font-headline font-bold">Structuring Your Presentation...</p>
-        <p className="text-muted-foreground">Building 5-8 professional slides from your text.</p>
+        <p className="text-muted-foreground">Building a professional slide deck from your text.</p>
       </div>
     );
   }
 
   if (slides.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4 min-h-[70vh]">
         <Presentation className="h-16 w-16 text-muted-foreground opacity-20" />
         <h2 className="text-2xl font-bold">No Deck Found</h2>
-        <p className="text-muted-foreground">Upload content first to generate a structured slide deck.</p>
-        <Button asChild><a href="/upload">Go to Upload</a></Button>
+        <p className="text-muted-foreground">Transform your text into a structured presentation for better information hierarchy.</p>
+        <Button onClick={fetchSlides} size="lg" className="rounded-full px-8 gap-2">
+           <Sparkles className="h-4 w-4" /> Generate Slide Deck
+        </Button>
       </div>
     );
   }
@@ -65,14 +80,19 @@ export default function SlidesPage() {
           <h1 className="text-4xl font-headline font-black">AI Slide Deck</h1>
           <p className="text-muted-foreground text-lg">A structured presentation based on your material.</p>
         </div>
-        <Button variant="outline" className="rounded-full h-12 gap-2 font-bold">
-           <Download className="h-4 w-4" /> Export PPTX (Simulated)
-        </Button>
+        <div className="flex gap-2">
+           <Button variant="ghost" className="rounded-full h-12 gap-2" onClick={fetchSlides}>
+              <RefreshCw className="h-4 w-4" /> Regenerate
+           </Button>
+           <Button variant="outline" className="rounded-full h-12 gap-2 font-bold">
+              <Download className="h-4 w-4" /> Export Deck
+           </Button>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 items-stretch">
         <div className="flex-1 space-y-6">
-          <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden aspect-video flex flex-col relative transition-all duration-500">
+          <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden aspect-video flex flex-col relative">
             <div className="bg-primary p-8 md:p-12 text-white">
                <h2 className="text-3xl md:text-5xl font-headline font-black leading-tight">{currentSlide.title}</h2>
             </div>
@@ -126,22 +146,6 @@ export default function SlidesPage() {
               <CardContent className="p-6">
                  <p className="text-sm italic leading-relaxed text-slate-600">
                     "{currentSlide.visualSuggestion}"
-                 </p>
-                 <Button variant="outline" size="sm" className="w-full mt-4 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                    Search Images
-                 </Button>
-              </CardContent>
-           </Card>
-
-           <Card className="border-none shadow-xl rounded-[2rem] bg-muted/20">
-              <CardHeader>
-                 <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Sparkles className="h-3 w-3" /> Presentation Tip
-                 </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                 <p className="text-xs leading-relaxed text-slate-500">
-                    When presenting this slide, focus on the emotional impact of the data. Use the bullet points as cues rather than reading them verbatim.
                  </p>
               </CardContent>
            </Card>

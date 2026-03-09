@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, FileSpreadsheet, Download, Copy, Sparkles, Table as TableIcon, RefreshCw } from "lucide-react";
 import { generateDataTable } from "@/ai/flows/generate-data-table-flow";
 import { useToast } from "@/hooks/use-toast";
+
+export const maxDuration = 60;
 
 export default function DataTablePage() {
   const [tableData, setTableData] = useState<{ markdownTable: string; description: string } | null>(null);
@@ -20,6 +21,7 @@ export default function DataTablePage() {
       return;
     }
     setIsLoading(true);
+    setTableData(null);
     try {
       const result = await generateDataTable({ content });
       setTableData(result);
@@ -33,11 +35,17 @@ export default function DataTablePage() {
   };
 
   useEffect(() => {
-    const content = sessionStorage.getItem("quiz_content");
-    if (content && !tableData) {
-      fetchTable();
+    const code = sessionStorage.getItem("last_table_data");
+    if (code) {
+      setTableData(JSON.parse(code));
     }
   }, []);
+
+  useEffect(() => {
+    if (tableData) {
+      sessionStorage.setItem("last_table_data", JSON.stringify(tableData));
+    }
+  }, [tableData]);
 
   const copyToClipboard = () => {
     if (tableData) {
@@ -102,19 +110,7 @@ export default function DataTablePage() {
              </div>
           </div>
         </CardContent>
-        <CardFooter className="bg-primary/5 p-6 flex justify-center">
-           <p className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Sparkles className="h-4 w-4" /> AI-Synthesized Comparison Model
-           </p>
-        </CardFooter>
       </Card>
-
-      <div className="p-8 bg-muted/20 rounded-[2.5rem] space-y-4 text-left">
-         <h3 className="text-lg font-bold">Why use Data Tables?</h3>
-         <p className="text-sm text-slate-600 leading-relaxed">
-           Data tables are excellent for "Synoptic Learning"—the ability to see how different parts of a subject relate to one another. By isolating variables, comparisons, or numbers, you can identify patterns that are often lost in paragraph-style text.
-         </p>
-      </div>
     </div>
   );
 }

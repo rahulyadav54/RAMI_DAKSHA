@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ImageIcon, Download, Sparkles, RefreshCw, ZoomIn } from "lucide-react";
 import { generateInfographic } from "@/ai/flows/generate-infographic-flow";
 import { useToast } from "@/hooks/use-toast";
+
+export const maxDuration = 60;
 
 export default function InfographicPage() {
   const [infographic, setInfographic] = useState<{ imageUrl: string } | null>(null);
@@ -20,24 +21,31 @@ export default function InfographicPage() {
       return;
     }
     setIsLoading(true);
+    setInfographic(null);
     try {
       const result = await generateInfographic({ content });
       setInfographic(result);
       toast({ title: "Visual Generated", description: "Concepts mapped successfully." });
     } catch (err) {
       console.error(err);
-      toast({ variant: "destructive", title: "Image Generation Failed", description: "Imagen is currently at capacity. Please try again." });
+      toast({ variant: "destructive", title: "Image Generation Failed", description: "The AI engine is busy. Please try again." });
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    const content = sessionStorage.getItem("quiz_content");
-    if (content && !infographic) {
-      fetchInfographic();
+    const code = sessionStorage.getItem("last_infographic");
+    if (code) {
+      setInfographic({ imageUrl: code });
     }
   }, []);
+
+  useEffect(() => {
+    if (infographic) {
+      sessionStorage.setItem("last_infographic", infographic.imageUrl);
+    }
+  }, [infographic]);
 
   if (isLoading) {
     return (
@@ -96,31 +104,12 @@ export default function InfographicPage() {
           <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-primary/10 flex items-center gap-3">
              <Sparkles className="h-6 w-6 text-primary" />
              <div className="text-xs">
-                <p className="font-black uppercase tracking-widest text-primary">Imagen 4</p>
+                <p className="font-black uppercase tracking-widest text-primary">AI Engine</p>
                 <p className="text-slate-500 font-bold">Visual Intelligence</p>
              </div>
           </div>
         </div>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-         <Card className="border-none shadow-lg bg-primary/5 rounded-[2rem] p-8">
-            <CardHeader className="p-0 mb-4 text-left">
-               <CardTitle className="text-lg font-headline">Visual Learning</CardTitle>
-            </CardHeader>
-            <p className="text-sm leading-relaxed text-slate-600">
-              This infographic represents the semantic structure of your content. By associating text concepts with visual icons and spatial layouts, the brain can form stronger mnemonic connections, increasing long-term retention.
-            </p>
-         </Card>
-         <Card className="border-none shadow-lg bg-accent/5 rounded-[2rem] p-8">
-            <CardHeader className="p-0 mb-4 text-left">
-               <CardTitle className="text-lg font-headline">Usage Context</CardTitle>
-            </CardHeader>
-            <p className="text-sm leading-relaxed text-slate-600">
-              Use this image as a "Mental Anchor" before you begin studying detailed notes. It sets the context and provides a high-level map of the knowledge terrain you're about to explore.
-            </p>
-         </Card>
-      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ const GenerateFlowchartInputSchema = z.object({
 export type GenerateFlowchartInput = z.infer<typeof GenerateFlowchartInputSchema>;
 
 const GenerateFlowchartOutputSchema = z.object({
-  mermaidCode: z.string().describe('A valid Mermaid.js flowchart definition (starting with graph TD or LR) representing the logic, process, or hierarchy of the content.'),
+  mermaidCode: z.string().describe('A valid Mermaid.js flowchart definition (starting with graph TD or LR).'),
 });
 export type GenerateFlowchartOutput = z.infer<typeof GenerateFlowchartOutputSchema>;
 
@@ -29,9 +29,9 @@ const prompt = ai.definePrompt({
   The output MUST be a valid Mermaid.js flowchart definition. 
   - Start with "graph TD" (Top-Down) or "graph LR" (Left-Right).
   - Use concise labels for nodes.
-  - CRITICAL SYNTAX RULE: Every node label MUST be wrapped in double quotes to prevent syntax errors with special characters. Example: A["Step One"] --> B["Step Two"]
-  - ILLEGAL CHARACTERS: Do not use square brackets [], parentheses (), or additional quotes inside the labels themselves. If the source text has them, replace them with spaces.
-  - NO MARKDOWN: Output only the raw Mermaid code, do not wrap it in markdown code blocks like \`\`\`mermaid.
+  - CRITICAL SYNTAX RULE: Every node label MUST be wrapped in double quotes. Example: A["Step One"] --> B["Step Two"]
+  - Avoid using special characters like brackets or parentheses inside labels.
+  - Output only the raw Mermaid code, do not wrap it in markdown code blocks.
 
   Content: """{{{content}}}"""
   `,
@@ -47,10 +47,10 @@ export const generateFlowchartFlow = ai.defineFlow(
     const { output } = await prompt(input);
     if (!output) throw new Error('Failed to generate flowchart.');
     
-    // Sanitize output to remove markdown blocks if the AI accidentally included them
+    // Sanitize output
     let code = output.mermaidCode.trim();
-    if (code.startsWith('```')) {
-      code = code.replace(/^```mermaid\n?/, '').replace(/```$/, '').trim();
+    if (code.includes('```')) {
+      code = code.replace(/```mermaid/g, '').replace(/```/g, '').trim();
     }
     
     return { mermaidCode: code };
