@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -15,7 +14,8 @@ import {
   Trophy, 
   LogOut,
   ChevronRight,
-  PlusCircle
+  PlusCircle,
+  Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -25,14 +25,13 @@ import {
   SidebarHeader, 
   SidebarMenu, 
   SidebarMenuItem, 
-  SidebarMenuButton,
-  SidebarProvider
+  SidebarMenuButton
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/firebase";
 
 const navItems = [
-  { href: "/upload", label: "Take a Quiz", icon: PlusCircle },
+  { href: "/upload", label: "Take a Quiz", icon: PlusCircle, highlight: true },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/speed-quiz", label: "Speed Quiz", icon: Zap },
   { href: "/flashcards", label: "Flashcards", icon: Layers },
@@ -46,40 +45,49 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
 
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname === "/login") return null;
 
   return (
-    <Sidebar className="border-r border-border/50 bg-background">
-      <SidebarHeader className="p-6">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="bg-primary p-2 rounded-xl text-primary-foreground shadow-lg shadow-primary/20">
-            <Bot className="h-6 w-6" />
+    <Sidebar className="border-r border-primary/5 bg-white/50 backdrop-blur-xl">
+      <SidebarHeader className="p-8">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="bg-gradient-to-br from-primary to-accent p-2.5 rounded-2xl text-white shadow-xl shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
+            <Bot className="h-7 w-7" />
           </div>
-          <span className="text-xl font-headline font-bold text-primary tracking-tight">SmartRead AI</span>
+          <div>
+            <span className="text-2xl font-headline font-bold text-foreground tracking-tight block">SmartRead</span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] -mt-1 block">AI Tutor</span>
+          </div>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
-        <SidebarMenu className="space-y-1">
+      <SidebarContent className="px-4">
+        <SidebarMenu className="gap-2">
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton 
                 asChild 
                 isActive={pathname === item.href}
                 className={cn(
-                  "h-12 px-4 rounded-xl transition-all duration-200 group",
+                  "h-12 px-4 rounded-2xl transition-all duration-300 group relative",
                   pathname === item.href 
-                    ? "bg-primary/10 text-primary font-semibold ring-1 ring-primary/20" 
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary",
+                  item.highlight && pathname !== item.href && "border-2 border-primary/20 bg-primary/5 text-primary"
                 )}
               >
                 <Link href={item.href} className="flex items-center w-full">
                   <item.icon className={cn(
                     "h-5 w-5 mr-3 transition-transform group-hover:scale-110",
-                    pathname === item.href ? "text-primary" : "text-muted-foreground"
+                    pathname === item.href ? "text-primary-foreground" : "text-current"
                   )} />
-                  <span className="flex-1">{item.label}</span>
-                  {pathname === item.href && <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />}
+                  <span className="flex-1 font-medium">{item.label}</span>
+                  {item.highlight && pathname !== item.href && (
+                    <Sparkles className="h-4 w-4 ml-2 animate-pulse" />
+                  )}
+                  {pathname === item.href && (
+                    <div className="absolute right-4 h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -87,21 +95,21 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/50">
-        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group">
-          <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
+      <SidebarFooter className="p-6 border-t border-primary/5">
+        <div className="flex items-center gap-4 p-3 rounded-2xl hover:bg-primary/5 transition-all duration-300 cursor-pointer group border border-transparent hover:border-primary/10">
+          <Avatar className="h-11 w-11 border-2 border-white shadow-sm transition-transform group-hover:scale-105">
             <AvatarImage src={`https://picsum.photos/seed/${user?.uid || 'guest'}/100/100`} />
-            <AvatarFallback className="bg-primary/5 text-primary">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {user?.displayName?.substring(0, 2).toUpperCase() || "AN"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate">{user?.displayName || "Alex Newman"}</p>
-            <Link href="/" className="text-xs text-muted-foreground flex items-center gap-1 hover:text-destructive transition-colors">
-              <LogOut className="h-3 w-3" /> Exit Session
+            <p className="text-sm font-bold text-foreground truncate">{user?.displayName || "New Scholar"}</p>
+            <Link href="/" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 hover:text-destructive transition-colors">
+              <LogOut className="h-3 w-3" /> Sign Out
             </Link>
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:translate-x-1 transition-transform" />
         </div>
       </SidebarFooter>
     </Sidebar>

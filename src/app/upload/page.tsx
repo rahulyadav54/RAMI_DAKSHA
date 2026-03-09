@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -11,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Upload, FileText, AlertCircle, Sparkles, FileUp, BookOpen, Settings2, Clock, BarChart } from "lucide-react";
+import { Loader2, BookOpen, AlertCircle, Sparkles, FileUp, Settings2, Clock, BarChart } from "lucide-react";
 import { generateQuizFromContent } from "@/ai/flows/generate-quiz-from-content";
 import { detectReadingLevel } from "@/ai/flows/detect-reading-level";
 import { generateStudyGuide } from "@/ai/flows/generate-study-guide";
@@ -30,7 +29,6 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   
-  // Quiz Configuration State
   const [mcqCount, setMcqCount] = useState(3);
   const [shortCount, setShortCount] = useState(2);
   const [tfCount, setTfCount] = useState(2);
@@ -134,6 +132,7 @@ export default function UploadPage() {
       sessionStorage.setItem("last_reading_level", JSON.stringify(readingLevel));
       sessionStorage.setItem("quiz_content", content);
       sessionStorage.setItem("quiz_timer", timerSeconds.toString());
+      sessionStorage.setItem("current_session_id", "new-temp-session"); // We'd get the actual ID if needed
       
       router.push("/quiz/preview");
     } catch (err: any) {
@@ -144,184 +143,145 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="container mx-auto p-4 md:p-8 flex-1 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-3xl shadow-2xl border-primary/20 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="bg-primary/10 p-4 rounded-full">
-                <BookOpen className="h-8 w-8 text-primary" />
+    <div className="container mx-auto p-4 md:p-12 max-w-5xl animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="grid gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-12 space-y-6 text-center mb-4">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-none rounded-full px-4 py-1.5 font-bold uppercase tracking-widest text-[10px]">
+            <Sparkles className="h-3 w-3 mr-2" /> AI Intelligence Hub
+          </Badge>
+          <h1 className="text-4xl md:text-6xl font-headline font-black tracking-tight text-foreground">
+            Create Your <span className="text-primary">Study Kit</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            The smarter way to master any material. Upload, configure, and let the AI build your personalized learning environment.
+          </p>
+        </div>
+
+        <Card className="lg:col-span-7 border-none shadow-2xl shadow-primary/5 bg-white/50 backdrop-blur-sm rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="p-8 pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl font-bold font-headline">Reading Material</CardTitle>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  className="hidden"
+                  ref={fileInputRef}
+                  accept=".pdf,.docx,.txt"
+                  onChange={handleFileUpload}
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="rounded-2xl border-2 hover:bg-primary hover:text-white transition-all gap-2 h-10 px-6 font-bold"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isProcessing}
+                >
+                  <FileUp className="h-4 w-4" /> Upload Document
+                </Button>
               </div>
             </div>
-            <CardTitle className="text-3xl font-headline font-bold">Create Study Session</CardTitle>
-            <CardDescription className="text-lg mt-2">
-              Customize your AI assessment based on your reading material.
-            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="p-8 pt-4 space-y-6">
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="rounded-2xl">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="content" className="text-lg font-semibold">Reading Material</Label>
-                <div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    ref={fileInputRef}
-                    accept=".pdf,.docx,.txt"
-                    onChange={handleFileUpload}
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="gap-2 rounded-xl"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isProcessing}
-                  >
-                    <FileUp className="h-4 w-4" /> Upload Document
-                  </Button>
-                </div>
-              </div>
-              
-              <Textarea
-                id="content"
-                placeholder="Paste your article or notes here... AI will build a quiz based on this."
-                className="min-h-[200px] resize-none text-base p-6 rounded-2xl border-primary/10 focus:ring-primary shadow-inner bg-white/50"
-                value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  if (e.target.value.length > 50) setShowConfig(true);
-                }}
-                disabled={isProcessing}
-              />
-            </div>
-
-            {showConfig && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-xs">
-                  <Settings2 className="h-4 w-4" /> Configure Your Quiz
-                </div>
-                <Separator />
-                
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-bold">Multiple Choice</Label>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        value={mcqCount} 
-                        onChange={(e) => setMcqCount(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-bold">Short Answer</Label>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        value={shortCount} 
-                        onChange={(e) => setShortCount(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-bold">True / False</Label>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        value={tfCount} 
-                        onChange={(e) => setTfCount(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-bold">Fill in Blanks</Label>
-                      <Input 
-                        type="number" 
-                        min={0} 
-                        value={blankCount} 
-                        onChange={(e) => setBlankCount(parseInt(e.target.value) || 0)} 
-                        className="rounded-xl"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="bg-primary/5 p-4 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <Label className="font-bold">Timer (sec/question)</Label>
-                      </div>
-                    </div>
-                    <Input 
-                      type="number" 
-                      min={5} 
-                      value={timerSeconds} 
-                      onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} 
-                      className="rounded-xl"
-                    />
-                  </div>
-
-                  <div className="bg-primary/5 p-4 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <BarChart className="h-4 w-4 text-primary" />
-                        <Label className="font-bold">Difficulty Level</Label>
-                      </div>
-                    </div>
-                    <Select value={difficulty} onValueChange={(v: any) => setDifficulty(v)}>
-                      <SelectTrigger className="rounded-xl bg-white">
-                        <SelectValue placeholder="Select difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy (Recall)</SelectItem>
-                        <SelectItem value="intermediate">Intermediate (Inference)</SelectItem>
-                        <SelectItem value="hard">Hard (Analysis)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <Button 
-              className="w-full h-16 text-xl rounded-2xl shadow-lg hover:shadow-primary/20 transition-all gap-3" 
-              onClick={handleGenerate}
-              disabled={isProcessing || !content.trim()}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  Generating Study Kit...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-6 w-6" />
-                  Build Assessment
-                </>
-              )}
-            </Button>
+            <Textarea
+              placeholder="Paste text or upload a document..."
+              className="min-h-[300px] resize-none text-lg p-8 rounded-[2rem] border-none bg-muted/30 focus-visible:ring-primary shadow-inner"
+              value={content}
+              onChange={(e) => {
+                setContent(e.target.value);
+                if (e.target.value.length > 50) setShowConfig(true);
+              }}
+              disabled={isProcessing}
+            />
           </CardContent>
-          <CardFooter className="justify-center border-t bg-muted/20 p-6 rounded-b-2xl">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold text-center">
-              AI will generate your custom questions from the material
-            </p>
-          </CardFooter>
         </Card>
-      </main>
+
+        <div className="lg:col-span-5 space-y-6">
+          <Card className={cn(
+            "border-none shadow-2xl shadow-primary/5 bg-white/50 backdrop-blur-sm rounded-[2.5rem] transition-all duration-700",
+            showConfig ? "opacity-100 translate-x-0" : "opacity-50 blur-sm pointer-events-none translate-x-4"
+          )}>
+            <CardHeader className="p-8">
+              <CardTitle className="text-2xl font-bold font-headline flex items-center gap-2">
+                <Settings2 className="h-6 w-6 text-primary" /> Configuration
+              </CardTitle>
+              <CardDescription>Tailor the AI's generation parameters.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0 space-y-8">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Multiple Choice</Label>
+                  <Input type="number" value={mcqCount} onChange={(e) => setMcqCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Short Answer</Label>
+                  <Input type="number" value={shortCount} onChange={(e) => setShortCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">True / False</Label>
+                  <Input type="number" value={tfCount} onChange={(e) => setTfCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Fill in Blanks</Label>
+                  <Input type="number" value={blankCount} onChange={(e) => setBlankCount(parseInt(e.target.value) || 0)} className="h-12 rounded-2xl bg-muted/50 border-none" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-primary/5 p-6 rounded-3xl space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <Label className="font-bold text-sm">Timer (sec/question)</Label>
+                  </div>
+                  <Input type="number" value={timerSeconds} onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 30)} className="h-12 rounded-2xl bg-white border-none" />
+                </div>
+
+                <div className="bg-primary/5 p-6 rounded-3xl space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart className="h-4 w-4 text-primary" />
+                    <Label className="font-bold text-sm">Difficulty Level</Label>
+                  </div>
+                  <Select value={difficulty} onValueChange={(v: any) => setDifficulty(v)}>
+                    <SelectTrigger className="h-12 rounded-2xl bg-white border-none">
+                      <SelectValue placeholder="Select difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="easy">Easy (Recall)</SelectItem>
+                      <SelectItem value="intermediate">Intermediate (Inference)</SelectItem>
+                      <SelectItem value="hard">Hard (Analysis)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button 
+                className="w-full h-16 text-xl rounded-2xl shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-all gap-3 font-bold" 
+                onClick={handleGenerate}
+                disabled={isProcessing || !content.trim()}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    Synthesizing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-6 w-6" />
+                    Build Assessment
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

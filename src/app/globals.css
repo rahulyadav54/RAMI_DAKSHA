@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 210 33% 95%; /* #ECF2F7 */
+    --background: 210 33% 98%; /* Soft blue-grey background */
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 208 69% 61%; /* #57A1E0 */
+    --primary: 208 69% 61%; /* #57A1E0 - Sky Blue */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 254 84% 44%; /* #3E12CC */
+    --accent: 254 84% 44%; /* #3E12CC - Royal Purple */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 208 69% 61%;
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
   .dark {
     --background: 222 47% 11%;
@@ -53,9 +53,20 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body transition-colors duration-300;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline tracking-tight;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
 }
