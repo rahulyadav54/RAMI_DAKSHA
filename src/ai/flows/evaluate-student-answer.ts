@@ -40,10 +40,7 @@ Finally, give specific suggestions for improvement.
 
 Question: {{{question}}}
 Correct Answer: {{{correctAnswer}}}
-Student's Answer: {{{studentAnswer}}}
-
-Your output must be a JSON object matching the following structure:
-{{jsonSchema EvaluateStudentAnswerOutputSchema}}`,
+Student's Answer: {{{studentAnswer}}}`,
 });
 
 const evaluateStudentAnswerFlow = ai.defineFlow(
