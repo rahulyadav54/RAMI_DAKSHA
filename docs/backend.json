@@ -14,7 +14,11 @@
         "totalPoints": { "type": "number" },
         "currentStreak": { "type": "number" },
         "lastActiveAt": { "type": "string", "format": "date-time" },
-        "avatarUrl": { "type": "string" }
+        "avatarUrl": { "type": "string" },
+        "childrenIds": { "type": "array", "items": { "type": "string" } },
+        "teacherId": { "type": "string" },
+        "classCode": { "type": "string" },
+        "approved": { "type": "boolean" }
       },
       "required": ["uid", "role"]
     },
@@ -39,6 +43,7 @@
       "type": "object",
       "properties": {
         "sessionId": { "type": "string" },
+        "studentId": { "type": "string" },
         "type": { "type": "string", "enum": ["standard", "speed", "adaptive"] },
         "score": { "type": "number" },
         "evaluations": { "type": "array" },
@@ -46,24 +51,17 @@
         "completedAt": { "type": "string", "format": "date-time" }
       }
     },
-    "CharacterChat": {
-      "title": "Character Chat",
-      "description": "Messages exchanged with an AI character.",
+    "Assessment": {
+      "title": "Assessment",
+      "description": "A teacher-created assessment assigned to students.",
       "type": "object",
       "properties": {
-        "characterId": { "type": "string" },
-        "messages": { "type": "array" },
-        "updatedAt": { "type": "string", "format": "date-time" }
-      }
-    },
-    "HomeworkTask": {
-      "title": "Homework Task",
-      "description": "AI-generated tasks based on weak areas.",
-      "type": "object",
-      "properties": {
-        "topic": { "type": "string" },
-        "tasks": { "type": "array" },
-        "isCompleted": { "type": "boolean" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "content": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "assignedTo": { "type": "array", "items": { "type": "string" } },
+        "dueDate": { "type": "string", "format": "date-time" },
         "createdAt": { "type": "string", "format": "date-time" }
       }
     }
@@ -74,7 +72,7 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "User profiles."
+      "description": "User profiles with role-specific metadata."
     },
     "/users/{userId}/sessions/{sessionId}": {
       "schema": { "$ref": "#/backend/entities/ReadingSession" },
@@ -84,13 +82,9 @@
       "schema": { "$ref": "#/backend/entities/QuizAttempt" },
       "description": "Student quiz results."
     },
-    "/users/{userId}/chats/{chatId}": {
-      "schema": { "$ref": "#/backend/entities/CharacterChat" },
-      "description": "Conversations with AI characters."
-    },
-    "/users/{userId}/homework/{taskId}": {
-      "schema": { "$ref": "#/backend/entities/HomeworkTask" },
-      "description": "Personalized homework assignments."
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/backend/entities/Assessment" },
+      "description": "Global assessment bank created by teachers."
     }
   }
 }
